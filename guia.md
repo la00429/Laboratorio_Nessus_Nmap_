@@ -414,6 +414,3 @@ Archivos adjuntos: resultados/scan.xml, reports/scan_summary.csv, reports/scan.p
 * Persona Nessus: desplegar Nessus VM y confirmar acceso `https://10.10.0.100:8834`.
 * Persona Integración: colocar `scripts/parse_nmap_xml.py` y ejecutar contra un XML de ejemplo.
 
----
-
-Si se desea, puedo convertir esta guía a un `README.md` listo para el repositorio (formato markdown), o generar plantillas de issues/tickets para cada entregable (texto listo para copiar). ¿Genero ya el `README.md`?
