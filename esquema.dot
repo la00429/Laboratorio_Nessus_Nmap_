@@ -1,0 +1,126 @@
+// lab_nmap_nessus.dot
+// Diagrama Graphviz (dot) del laboratorio Nmap / Nessus
+graph Lab {
+  fontsize=12;
+  labelloc="t";
+  label="Laboratorio Nmap / Nessus — red 10.10.0.0/24";
+  splines=true;
+  overlap=false;
+  concentrate=true;
+  margin=0.2;
+
+  // Estilos generales
+  node [fontname="Helvetica" shape=box style="rounded,filled" fontsize=11];
+  edge [penwidth=1.2];
+
+  // Host / Hypervisor (fuera del cluster de laboratorio)
+  Host [label=<
+    <table border="0" cellborder="0" cellspacing="2">
+      <tr><td><b>Host / Hypervisor</b></td></tr>
+      <tr><td>VirtualBox / VMware / Proxmox</td></tr>
+      <tr><td><font point-size="10">(Snapshots, NAT/Host-only)</font></td></tr>
+    </table>
+  >, fillcolor="#f0f0f0", shape=box];
+
+  // Gateway / NAT (opcional)
+  Gateway [label="Gateway (opcional)\nNAT / Host-only", shape=oval, fillcolor="#fff2cc"];
+
+  // Cluster: red del laboratorio
+  subgraph cluster_lab {
+    label="Red del laboratorio — 10.10.0.0/24";
+    color="#a6cee3";
+    style="filled";
+    fillcolor="#f7fcfd";
+    fontsize=12;
+    labelloc="t";
+
+    // Attacker
+    Kali [label=<
+      <table border="0" cellborder="0" cellspacing="2">
+        <tr><td><b>Kali (Attacker)</b></td></tr>
+        <tr><td>IP: 10.10.0.10</td></tr>
+        <tr><td>Herramientas: nmap, metasploit, python</td></tr>
+      </table>
+    >, fillcolor="#fde0dd"];
+
+    // Nessus
+    Nessus [label=<
+      <table border="0" cellborder="0" cellspacing="2">
+        <tr><td><b>Nessus Server</b></td></tr>
+        <tr><td>IP: 10.10.0.100</td></tr>
+        <tr><td>Port: 8834 (web UI)</td></tr>
+        <tr><td>Credentialed / non-credentialed scans</td></tr>
+      </table>
+    >, fillcolor="#e6f5d0"];
+
+    // Vulnerable targets
+    Metasploitable [label=<
+      <table border="0" cellborder="0" cellspacing="2">
+        <tr><td><b>Metasploitable2</b></td></tr>
+        <tr><td>IP: 10.10.0.20</td></tr>
+        <tr><td>Serv.: FTP, SSH (vulnerable), MySQL, etc.</td></tr>
+      </table>
+    >, fillcolor="#fce6c9"];
+
+    DVWA [label=<
+      <table border="0" cellborder="0" cellspacing="2">
+        <tr><td><b>DVWA / OWASP BWA</b></td></tr>
+        <tr><td>IP: 10.10.0.21</td></tr>
+        <tr><td>Aplicaciones web vulnerables</td></tr>
+      </table>
+    >, fillcolor="#fce6c9"];
+
+    WinServer [label=<
+      <table border="0" cellborder="0" cellspacing="2">
+        <tr><td><b>Windows Server (Target)</b></td></tr>
+        <tr><td>IP: 10.10.0.30</td></tr>
+        <tr><td>Usar para scans credentialed (SMB/WMI)</td></tr>
+      </table>
+    >, fillcolor="#fbe9f9"];
+
+    // Optional: management VM (logs, ELK) - opcional
+    Management [label=<
+      <table border="0" cellborder="0" cellspacing="2">
+        <tr><td><b>Management / Logs (opcional)</b></td></tr>
+        <tr><td>SIEM, ELK, SFTP</td></tr>
+      </table>
+    >, fillcolor="#e8f4ff"];
+
+    // Layout hints
+    { rank = same; Kali; Nessus; Management; }
+    { rank = same; Metasploitable; DVWA; WinServer; }
+  } // end cluster_lab
+
+  // Conexiones físicas / lógicas
+  Host -- Gateway [label="Host-only / NAT", style=dashed];
+  Gateway -- Kali [label="10.10.0.10", fontsize=9];
+  Gateway -- Nessus [label="10.10.0.100", fontsize=9];
+  Gateway -- Metasploitable [label="10.10.0.20", fontsize=9];
+  Gateway -- DVWA [label="10.10.0.21", fontsize=9];
+  Gateway -- WinServer [label="10.10.0.30", fontsize=9];
+  Gateway -- Management [label="(opcional)", fontsize=9];
+
+  // Relaciones lógicas destacadas
+  Kali -- Metasploitable [label="Nmap / Recon\nSYN, UDP, NSE", color="#b30059"];
+  Kali -- DVWA [label="Web bruteforce\nNSE http scripts", color="#b30059"];
+  Kali -- WinServer [label="SMB/OS fingerprint\ncredentialed tests", color="#b30059"];
+  Nessus -- Metasploitable [label="Scans (non/credentialed)", color="#006400"];
+  Nessus -- DVWA [label="Scans (web checks)", color="#006400"];
+  Nessus -- WinServer [label="Credentialed scan (SMB/WMI)", color="#006400"];
+  Nessus -- Kali [label="Import Nmap XML\n(or run scans)", style=dotted, color="#2f4f4f"];
+
+  // Leyenda simple
+  subgraph cluster_legend {
+    label="Leyenda";
+    fontsize=10;
+    style="rounded";
+    color="#dddddd";
+    legend_host [label="Host / Hypervisor", shape=box, fillcolor="#f0f0f0"];
+    legend_attacker [label="Atacante (Kali)", shape=box, fillcolor="#fde0dd"];
+    legend_nessus [label="Nessus Server", shape=box, fillcolor="#e6f5d0"];
+    legend_target [label="Targets vulnerables", shape=box, fillcolor="#fce6c9"];
+    legend_win [label="Windows Target", shape=box, fillcolor="#fbe9f9"];
+    legend_mgmt [label="Management / Logs", shape=box, fillcolor="#e8f4ff"];
+    { rank = same; legend_host; legend_attacker; legend_nessus; legend_target; legend_win; legend_mgmt; }
+  }
+}
