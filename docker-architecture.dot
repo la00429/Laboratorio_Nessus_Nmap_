@@ -1,0 +1,147 @@
+// docker-architecture.dot
+// Diagrama Graphviz (dot) del laboratorio Docker Nmap + Nessus
+graph DockerLab {
+  fontsize=12;
+  labelloc="t";
+  label="Laboratorio Docker - Nmap + Nessus\nRed: 10.10.0.0/24";
+  splines=true;
+  overlap=false;
+  concentrate=true;
+  margin=0.2;
+
+  // Estilos generales
+  node [fontname="Helvetica" shape=box style="rounded,filled" fontsize=11];
+  edge [penwidth=1.2];
+
+  // Host Docker
+  DockerHost [label=<
+    <table border="0" cellborder="0" cellspacing="2">
+      <tr><td><b>Docker Host</b></td></tr>
+      <tr><td>Windows/Mac/Linux</td></tr>
+      <tr><td><font point-size="10">Docker Desktop / Engine</font></td></tr>
+    </table>
+  >, fillcolor="#f0f0f0", shape=box];
+
+  // Red Docker
+  subgraph cluster_docker_network {
+    label="Red Docker - lab-network (10.10.0.0/24)";
+    color="#a6cee3";
+    style="filled";
+    fillcolor="#f7fcfd";
+    fontsize=12;
+    labelloc="t";
+
+    // Kali Linux Container
+    KaliDocker [label=<
+      <table border="0" cellborder="0" cellspacing="2">
+        <tr><td><b>Kali Linux Container</b></td></tr>
+        <tr><td>IP: 10.10.0.10</td></tr>
+        <tr><td>Puerto: 2222 (SSH)</td></tr>
+        <tr><td>Herramientas: nmap, python, scripts</td></tr>
+        <tr><td><font point-size="10">kali-lab</font></td></tr>
+      </table>
+    >, fillcolor="#fde0dd"];
+
+    // Nessus Container
+    NessusDocker [label=<
+      <table border="0" cellborder="0" cellspacing="2">
+        <tr><td><b>Nessus Container</b></td></tr>
+        <tr><td>IP: 10.10.0.100</td></tr>
+        <tr><td>Puerto: 8834 (HTTPS)</td></tr>
+        <tr><td>Escáner de vulnerabilidades</td></tr>
+        <tr><td><font point-size="10">nessus-lab</font></td></tr>
+      </table>
+    >, fillcolor="#e6f5d0"];
+
+    // Metasploitable Container
+    MetasploitableDocker [label=<
+      <table border="0" cellborder="0" cellspacing="2">
+        <tr><td><b>Metasploitable Container</b></td></tr>
+        <tr><td>IP: 10.10.0.20</td></tr>
+        <tr><td>Puertos: 2220, 8020, 8050, etc.</td></tr>
+        <tr><td>Sistema Linux vulnerable</td></tr>
+        <tr><td><font point-size="10">metasploitable-lab</font></td></tr>
+      </table>
+    >, fillcolor="#fce6c9"];
+
+    // DVWA Container
+    DVWADocker [label=<
+      <table border="0" cellborder="0" cellspacing="2">
+        <tr><td><b>DVWA Container</b></td></tr>
+        <tr><td>IP: 10.10.0.21</td></tr>
+        <tr><td>Puerto: 8180 (HTTP)</td></tr>
+        <tr><td>Aplicación web vulnerable</td></tr>
+        <tr><td><font point-size="10">dvwa-lab</font></td></tr>
+      </table>
+    >, fillcolor="#fce6c9"];
+
+    // Windows Target Container
+    WindowsDocker [label=<
+      <table border="0" cellborder="0" cellspacing="2">
+        <tr><td><b>Windows Target Container</b></td></tr>
+        <tr><td>IP: 10.10.0.30</td></tr>
+        <tr><td>Puertos: 8139, 8445 (SMB)</td></tr>
+        <tr><td>Simulador Windows</td></tr>
+        <tr><td><font point-size="10">windows-target-lab</font></td></tr>
+      </table>
+    >, fillcolor="#fbe9f9"];
+
+    // Layout hints
+    { rank = same; KaliDocker; NessusDocker; }
+    { rank = same; MetasploitableDocker; DVWADocker; WindowsDocker; }
+  }
+
+  // Volúmenes Docker
+  subgraph cluster_volumes {
+    label="Volúmenes Persistentes";
+    fontsize=10;
+    style="rounded";
+    color="#dddddd";
+    
+    NessusVolume [label="nessus_data\n/opt/nessus", shape=cylinder, fillcolor="#e8f4ff"];
+    KaliVolume [label="kali_workspace\n/workspace", shape=cylinder, fillcolor="#e8f4ff"];
+    ResultsVolume [label="results_data\n/workspace/resultados", shape=cylinder, fillcolor="#e8f4ff"];
+    ScriptsVolume [label="scripts_data\n/workspace/scripts", shape=cylinder, fillcolor="#e8f4ff"];
+  }
+
+  // Conexiones del host
+  DockerHost -- KaliDocker [label="SSH:2222", style=dashed];
+  DockerHost -- NessusDocker [label="HTTPS:8834", style=dashed];
+  DockerHost -- MetasploitableDocker [label="SSH:2220\nFTP:8020\nHTTP:8050", style=dashed];
+  DockerHost -- DVWADocker [label="HTTP:8180", style=dashed];
+  DockerHost -- WindowsDocker [label="SMB:8139,8445", style=dashed];
+
+  // Conexiones de red interna
+  KaliDocker -- MetasploitableDocker [label="Nmap Scans\nNSE Scripts", color="#b30059"];
+  KaliDocker -- DVWADocker [label="Web Tests\nHTTP Scripts", color="#b30059"];
+  KaliDocker -- WindowsDocker [label="SMB Tests\nCredentialed", color="#b30059"];
+  
+  NessusDocker -- MetasploitableDocker [label="Vuln Scans\nNon/Credentialed", color="#006400"];
+  NessusDocker -- DVWADocker [label="Web Vuln Scans", color="#006400"];
+  NessusDocker -- WindowsDocker [label="Credentialed Scans", color="#006400"];
+  
+  NessusDocker -- KaliDocker [label="Import Nmap XML", style=dotted, color="#2f4f4f"];
+
+  // Conexiones de volúmenes
+  NessusDocker -- NessusVolume [style=dotted, color="#666666"];
+  KaliDocker -- KaliVolume [style=dotted, color="#666666"];
+  KaliDocker -- ResultsVolume [style=dotted, color="#666666"];
+  KaliDocker -- ScriptsVolume [style=dotted, color="#666666"];
+
+  // Leyenda
+  subgraph cluster_legend {
+    label="Leyenda";
+    fontsize=10;
+    style="rounded";
+    color="#dddddd";
+    
+    legend_host [label="Docker Host", shape=box, fillcolor="#f0f0f0"];
+    legend_attacker [label="Kali Linux", shape=box, fillcolor="#fde0dd"];
+    legend_nessus [label="Nessus Scanner", shape=box, fillcolor="#e6f5d0"];
+    legend_target [label="Targets Vulnerables", shape=box, fillcolor="#fce6c9"];
+    legend_windows [label="Windows Target", shape=box, fillcolor="#fbe9f9"];
+    legend_volume [label="Volúmenes", shape=cylinder, fillcolor="#e8f4ff"];
+    
+    { rank = same; legend_host; legend_attacker; legend_nessus; legend_target; legend_windows; legend_volume; }
+  }
+}

@@ -1,0 +1,179 @@
+version: '3.8'
+
+networks:
+  lab-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.10.0.0/24
+          gateway: 10.10.0.1
+
+volumes:
+  nessus_data:
+  kali_workspace:
+  results_data:
+  scripts_data:
+
+services:
+  # Kali Linux - Herramientas de ataque y escaneo
+  kali:
+    build:
+      context: ./containers/kali
+      dockerfile: Dockerfile
+    container_name: kali-lab
+    hostname: kali-lab
+    networks:
+      lab-network:
+        ipv4_address: 10.10.0.10
+    volumes:
+      - kali_workspace:/workspace
+      - results_data:/workspace/resultados
+      - scripts_data:/workspace/scripts
+      - ./scripts:/workspace/scripts:ro
+      - ./nse:/workspace/nse:ro
+    ports:
+      - "2222:22"  # SSH para acceso remoto
+      - "8080:8080"  # Burp Suite si se usa
+    environment:
+      - DISPLAY=${DISPLAY:-:0}
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+      - SYS_ADMIN
+    restart: unless-stopped
+    depends_on:
+      - metasploitable
+      - dvwa
+      - windows-target
+
+  # Nessus - Escáner de vulnerabilidades
+  nessus:
+    build:
+      context: ./containers/nessus
+      dockerfile: Dockerfile
+    container_name: nessus-lab
+    hostname: nessus-lab
+    networks:
+      lab-network:
+        ipv4_address: 10.10.0.100
+    volumes:
+      - nessus_data:/opt/nessus
+      - results_data:/opt/nessus/imports
+    ports:
+      - "8834:8834"  # Web UI de Nessus
+    environment:
+      - NESSUS_ADMIN_PASSWORD=${NESSUS_ADMIN_PASSWORD:-admin123}
+    restart: unless-stopped
+    depends_on:
+      - metasploitable
+      - dvwa
+      - windows-target
+
+  # Metasploitable2 - Objetivo vulnerable Linux
+  metasploitable:
+    build:
+      context: ./containers/metasploitable
+      dockerfile: Dockerfile
+    container_name: metasploitable-lab
+    hostname: metasploitable-lab
+    networks:
+      lab-network:
+        ipv4_address: 10.10.0.20
+    volumes:
+      - ./containers/metasploitable/services:/etc/services.d:ro
+    ports:
+      - "2220:22"   # SSH vulnerable
+      - "8020:21"   # FTP vulnerable
+      - "8021:23"   # Telnet vulnerable
+      - "8030:25"   # SMTP vulnerable
+      - "8040:53"   # DNS vulnerable
+      - "8050:80"   # HTTP vulnerable
+      - "8060:110"  # POP3 vulnerable
+      - "8070:139"  # SMB vulnerable
+      - "8080:445"  # SMB vulnerable
+      - "8090:993"  # IMAPS vulnerable
+      - "8100:995"  # POP3S vulnerable
+      - "8110:1723" # PPTP vulnerable
+      - "8120:3306" # MySQL vulnerable
+      - "8130:5432" # PostgreSQL vulnerable
+      - "8140:5900" # VNC vulnerable
+      - "8150:6001" # X11 vulnerable
+    restart: unless-stopped
+
+  # DVWA - Damn Vulnerable Web Application
+  dvwa:
+    build:
+      context: ./containers/dvwa
+      dockerfile: Dockerfile
+    container_name: dvwa-lab
+    hostname: dvwa-lab
+    networks:
+      lab-network:
+        ipv4_address: 10.10.0.21
+    volumes:
+      - ./containers/dvwa/config:/var/www/html/config
+    ports:
+      - "8180:80"   # HTTP web interface
+      - "8330:3306" # MySQL
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=dvwa
+      - MYSQL_USER=dvwa
+      - MYSQL_PASSWORD=p@ssw0rd
+    restart: unless-stopped
+
+  # Windows Target - Para escaneos credentialed
+  windows-target:
+    build:
+      context: ./containers/windows-target
+      dockerfile: Dockerfile
+    container_name: windows-target-lab
+    hostname: windows-target-lab
+    networks:
+      lab-network:
+        ipv4_address: 10.10.0.30
+    ports:
+      - "8139:139"  # SMB
+      - "8445:445"  # SMB
+      - "8135:135"  # RPC
+      - "8149:3389" # RDP
+      - "8143:1433" # SQL Server
+    environment:
+      - WIN_PASSWORD=${WIN_PASSWORD:-Password123}
+    restart: unless-stopped
+
+  # Elasticsearch - Para logs y análisis (opcional)
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: elasticsearch-lab
+    hostname: elasticsearch-lab
+    networks:
+      lab-network:
+        ipv4_address: 10.10.0.40
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - ./containers/elasticsearch/data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    restart: unless-stopped
+
+  # Kibana - Dashboard para visualización (opcional)
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: kibana-lab
+    hostname: kibana-lab
+    networks:
+      lab-network:
+        ipv4_address: 10.10.0.41
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch-lab:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
