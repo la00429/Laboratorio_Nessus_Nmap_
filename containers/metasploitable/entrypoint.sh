@@ -53,5 +53,21 @@ echo "¡ADVERTENCIA! Este sistema contiene vulnerabilidades intencionadas."
 echo "Solo usar en entornos de laboratorio aislados."
 echo ""
 
-# Mantener el contenedor corriendo
-exec "$@"
+# Mantener el contenedor corriendo con supervisión de servicios
+echo "Manteniendo servicios activos..."
+while true; do
+    # Verificar y reiniciar servicios si es necesario
+    if ! pgrep -x "apache2" > /dev/null; then
+        echo "Reiniciando Apache..."
+        service apache2 restart
+    fi
+    if ! pgrep -x "mysqld" > /dev/null; then
+        echo "Reiniciando MySQL..."
+        service mysql restart
+    fi
+    if ! pgrep -x "postgres" > /dev/null; then
+        echo "Reiniciando PostgreSQL..."
+        service postgresql restart
+    fi
+    sleep 30
+done

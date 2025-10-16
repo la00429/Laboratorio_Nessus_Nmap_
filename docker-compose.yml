@@ -32,7 +32,7 @@ services:
       - ./nse:/workspace/nse:ro
     ports:
       - "2222:22"  # SSH para acceso remoto
-      - "8080:8080"  # Burp Suite si se usa
+      - "8081:8080"  # Burp Suite si se usa
     environment:
       - DISPLAY=${DISPLAY:-:0}
     privileged: true
@@ -49,8 +49,8 @@ services:
   # Nessus - Escáner de vulnerabilidades
   nessus:
     build:
-      context: ./containers/nessus
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./containers/nessus/Dockerfile
     image: lab-nmap-nessus-nessus:latest
     container_name: nessus-lab
     hostname: nessus-lab
@@ -73,8 +73,8 @@ services:
   # Metasploitable2 - Objetivo vulnerable Linux
   metasploitable:
     build:
-      context: ./containers/metasploitable
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./containers/metasploitable/Dockerfile
     image: lab-nmap-nessus-metasploitable:latest
     container_name: metasploitable-lab
     hostname: metasploitable-lab
@@ -92,7 +92,7 @@ services:
       - "8050:80"   # HTTP vulnerable
       - "8060:110"  # POP3 vulnerable
       - "8070:139"  # SMB vulnerable
-      - "8080:445"  # SMB vulnerable
+      - "8082:445"  # SMB vulnerable
       - "8090:993"  # IMAPS vulnerable
       - "8100:995"  # POP3S vulnerable
       - "8110:1723" # PPTP vulnerable
@@ -105,8 +105,8 @@ services:
   # DVWA - Damn Vulnerable Web Application
   dvwa:
     build:
-      context: ./containers/dvwa
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./containers/dvwa/Dockerfile
     image: lab-nmap-nessus-dvwa:latest
     container_name: dvwa-lab
     hostname: dvwa-lab
@@ -128,8 +128,8 @@ services:
   # Windows Target - Para escaneos credentialed
   windows-target:
     build:
-      context: ./containers/windows-target
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./containers/windows-target/Dockerfile
     image: lab-nmap-nessus-windows:latest
     container_name: windows-target-lab
     hostname: windows-target-lab

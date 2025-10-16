@@ -50,7 +50,7 @@ RUN echo '[homes]' >> /etc/samba/smb.conf && \
     chmod 777 /shared
 
 # Configurar usuario Samba
-RUN echo -e "$WIN_PASSWORD\n$WIN_PASSWORD" | smbpasswd -a administrator
+RUN (echo "Password123"; echo "Password123") | smbpasswd -a administrator
 
 # Configurar SSH
 RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
@@ -74,7 +74,7 @@ RUN echo "Windows Target Simulator" > /shared/readme.txt && \
     echo "Este es un simulador de Windows para pruebas de escaneo credentialed" >> /shared/readme.txt
 
 # Script de inicio
-COPY entrypoint.sh /entrypoint.sh
+COPY containers/windows-target/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # Exponer puertos

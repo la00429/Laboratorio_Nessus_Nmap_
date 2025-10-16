@@ -50,5 +50,21 @@ echo "- Contraseña: $WIN_PASSWORD"
 echo "- Dominio: (dejar vacío)"
 echo ""
 
-# Mantener el contenedor corriendo
-exec "$@"
+# Mantener el contenedor corriendo con supervisión de servicios
+echo "Manteniendo servicios activos..."
+while true; do
+    # Verificar y reiniciar servicios si es necesario
+    if ! pgrep -x "smbd" > /dev/null; then
+        echo "Reiniciando SMB..."
+        service smbd restart
+    fi
+    if ! pgrep -x "nmbd" > /dev/null; then
+        echo "Reiniciando NetBIOS..."
+        service nmbd restart
+    fi
+    if ! pgrep -x "sshd" > /dev/null; then
+        echo "Reiniciando SSH..."
+        service ssh restart
+    fi
+    sleep 30
+done

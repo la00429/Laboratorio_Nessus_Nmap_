@@ -2,7 +2,7 @@ FROM ubuntu:22.04
 
 # Metadatos
 LABEL maintainer="Laboratorio Nmap+Nessus"
-LABEL description="Nessus Vulnerability Scanner"
+LABEL description="Nessus Vulnerability Scanner Simulator"
 
 # Variables de entorno
 ENV DEBIAN_FRONTEND=noninteractive
@@ -11,38 +11,74 @@ ENV NESSUS_HOME=/opt/nessus
 
 # Actualizar sistema e instalar dependencias
 RUN apt-get update && apt-get install -y \
-    wget \
+    apache2 \
     curl \
-    gnupg2 \
-    software-properties-common \
-    ca-certificates \
-    apt-transport-https \
+    wget \
     && rm -rf /var/lib/apt/lists/*
 
-# Crear usuario nessus
-RUN groupadd -r nessus && useradd -r -g nessus -d /opt/nessus -s /bin/bash nessus
+# Crear directorios y archivos como root
+RUN mkdir -p /opt/nessus/sbin && \
+    mkdir -p /opt/nessus/www
 
-# Crear directorios
-RUN mkdir -p /opt/nessus/{bin,lib,var,etc,plugins,logs,imports} && \
+# Crear simulador de Nessus
+RUN echo '#!/bin/bash' > /opt/nessus/sbin/nessusd && \
+    echo 'echo "=== Nessus Simulator ==="' >> /opt/nessus/sbin/nessusd && \
+    echo 'echo "Simulador de Nessus para laboratorio educativo"' >> /opt/nessus/sbin/nessusd && \
+    echo 'echo "Web UI disponible en: https://localhost:8834"' >> /opt/nessus/sbin/nessusd && \
+    echo 'echo "Usuario: admin"' >> /opt/nessus/sbin/nessusd && \
+    echo 'echo "Password: admin123"' >> /opt/nessus/sbin/nessusd && \
+    echo 'echo "Servidor iniciado en modo simulación..."' >> /opt/nessus/sbin/nessusd && \
+    echo 'while true; do sleep 30; done' >> /opt/nessus/sbin/nessusd && \
+    chmod +x /opt/nessus/sbin/nessusd
+
+RUN echo '#!/bin/bash' > /opt/nessus/sbin/nessuscli && \
+    echo 'echo "Nessus CLI Simulator - Comando: $@"' >> /opt/nessus/sbin/nessuscli && \
+    echo 'echo "Simulador ejecutando comando: $@"' >> /opt/nessus/sbin/nessuscli && \
+    chmod +x /opt/nessus/sbin/nessuscli
+
+# Crear página web simulada de Nessus
+RUN echo '<html><head><title>Nessus Simulator</title></head>' > /opt/nessus/www/index.html && \
+    echo '<body style="font-family: Arial, sans-serif; margin: 50px; background-color: #f0f0f0;">' >> /opt/nessus/www/index.html && \
+    echo '<div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">' >> /opt/nessus/www/index.html && \
+    echo '<h1 style="color: #2c5aa0;">Nessus Vulnerability Scanner</h1>' >> /opt/nessus/www/index.html && \
+    echo '<h2 style="color: #666;">Simulador para Laboratorio Educativo</h2>' >> /opt/nessus/www/index.html && \
+    echo '<p>Este es un simulador de Nessus para propósitos educativos del laboratorio.</p>' >> /opt/nessus/www/index.html && \
+    echo '<p>En un entorno real, aquí verías la interfaz web completa de Nessus.</p>' >> /opt/nessus/www/index.html && \
+    echo '<hr>' >> /opt/nessus/www/index.html && \
+    echo '<h3>Credenciales de Acceso:</h3>' >> /opt/nessus/www/index.html && \
+    echo '<ul>' >> /opt/nessus/www/index.html && \
+    echo '<li><strong>Usuario:</strong> admin</li>' >> /opt/nessus/www/index.html && \
+    echo '<li><strong>Contraseña:</strong> admin123</li>' >> /opt/nessus/www/index.html && \
+    echo '<li><strong>Puerto:</strong> 8834</li>' >> /opt/nessus/www/index.html && \
+    echo '</ul>' >> /opt/nessus/www/index.html && \
+    echo '<hr>' >> /opt/nessus/www/index.html && \
+    echo '<h3>Funcionalidades del Simulador:</h3>' >> /opt/nessus/www/index.html && \
+    echo '<ul>' >> /opt/nessus/www/index.html && \
+    echo '<li>Interfaz web simulada</li>' >> /opt/nessus/www/index.html && \
+    echo '<li>Integración con scripts de Nmap</li>' >> /opt/nessus/www/index.html && \
+    echo '<li>Ejercicios de laboratorio</li>' >> /opt/nessus/www/index.html && \
+    echo '</ul>' >> /opt/nessus/www/index.html && \
+    echo '</div>' >> /opt/nessus/www/index.html && \
+    echo '</body></html>' >> /opt/nessus/www/index.html
+
+# Configurar Apache para servir la página simulada
+RUN echo 'Listen 8834' >> /etc/apache2/ports.conf && \
+    echo '<VirtualHost *:8834>' >> /etc/apache2/sites-available/nessus.conf && \
+    echo '    DocumentRoot /opt/nessus/www' >> /etc/apache2/sites-available/nessus.conf && \
+    echo '    ServerName localhost' >> /etc/apache2/sites-available/nessus.conf && \
+    echo '</VirtualHost>' >> /etc/apache2/sites-available/nessus.conf && \
+    a2ensite nessus.conf
+
+# Crear usuario nessus después de crear los archivos
+RUN groupadd -r nessus && useradd -r -g nessus -d /opt/nessus -s /bin/bash nessus && \
     chown -R nessus:nessus /opt/nessus
 
-# Descargar e instalar Nessus
-# Nota: En un entorno real, necesitarías descargar la versión apropiada
-# Aquí usamos una versión de prueba/desarrollo
-RUN wget -q https://www.tenable.com/downloads/api/v2/pages/nessus/files/Nessus-10.7.0-ubuntu1404_amd64.deb \
-    -O /tmp/nessus.deb && \
-    dpkg -i /tmp/nessus.deb || apt-get install -f -y && \
-    rm /tmp/nessus.deb
-
-# Configurar Nessus
-RUN /opt/nessus/sbin/nessuscli update --all || true
-
 # Crear script de inicialización
-COPY init-nessus.sh /init-nessus.sh
+COPY containers/nessus/init-nessus.sh /init-nessus.sh
 RUN chmod +x /init-nessus.sh
 
 # Crear script de entrada
-COPY entrypoint.sh /entrypoint.sh
+COPY containers/nessus/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # Exponer puertos

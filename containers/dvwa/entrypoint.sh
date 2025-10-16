@@ -54,4 +54,4 @@ echo ""
 
 # Iniciar Apache
 echo "Iniciando Apache..."
-exec "$@"
+apache2ctl -D FOREGROUND

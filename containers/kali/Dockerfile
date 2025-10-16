@@ -41,7 +41,7 @@ RUN apt-get update && apt-get upgrade -y && \
     && rm -rf /var/lib/apt/lists/*
 
 # Instalar librerías Python adicionales
-RUN pip3 install \
+RUN pip3 install --break-system-packages \
     python-nmap \
     requests \
     beautifulsoup4 \
@@ -54,7 +54,7 @@ RUN pip3 install \
 RUN echo 'root:kali123' | chpasswd && \
     sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
     sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config && \
-    mkdir /var/run/sshd
+    mkdir -p /var/run/sshd
 
 # Crear directorio de trabajo
 WORKDIR /workspace
@@ -85,8 +85,8 @@ EXPOSE 22 8080
 COPY containers/kali/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Cambiar a usuario no-root
-USER labuser
+# Mantener como root para SSH
+# USER labuser
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["/usr/sbin/sshd", "-D"]

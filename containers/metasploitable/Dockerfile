@@ -24,7 +24,6 @@ RUN apt-get update && apt-get install -y \
     nmap \
     # Servicios adicionales
     xinetd \
-    inetutils-telnetd \
     # Limpieza
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -77,7 +76,7 @@ RUN echo 'service vsftpd' > /etc/xinetd.d/vsftpd && \
     echo '}' >> /etc/xinetd.d/vsftpd
 
 # Script de inicio
-COPY entrypoint.sh /entrypoint.sh
+COPY containers/metasploitable/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # Exponer puertos vulnerables
