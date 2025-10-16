@@ -112,7 +112,7 @@ fi
 # Crear directorios necesarios
 log "Creando estructura de directorios..."
 
-mkdir -p resultados reports data/{nessus,kali} nse docs
+mkdir -p resultados reports data/{nessus,kali} nse docs scripts
 
 # Crear archivos de ejemplo si no existen
 if [ ! -f "scripts/my-banner.nse" ]; then

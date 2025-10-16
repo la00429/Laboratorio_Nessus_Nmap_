@@ -50,6 +50,9 @@ docker rmi lab-nmap-nessus-metasploitable:latest 2>/dev/null || true
 docker rmi lab-nmap-nessus-dvwa:latest 2>/dev/null || true
 docker rmi lab-nmap-nessus-windows:latest 2>/dev/null || true
 
+log "Verificando estructura de directorios..."
+mkdir -p scripts nse
+
 log "Construyendo imágenes con nombres explícitos..."
 docker-compose build --no-cache
 

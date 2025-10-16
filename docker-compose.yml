@@ -16,8 +16,8 @@ services:
   # Kali Linux - Herramientas de ataque y escaneo
   kali:
     build:
-      context: ./containers/kali
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./containers/kali/Dockerfile
     image: lab-nmap-nessus-kali:latest
     container_name: kali-lab
     hostname: kali-lab

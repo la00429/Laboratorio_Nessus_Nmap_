@@ -1,0 +1,6 @@
+# Ignorar archivos innecesarios en el contexto de build
+*.md
+*.txt
+*.log
+.DS_Store
+Thumbs.db

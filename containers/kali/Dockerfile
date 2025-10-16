@@ -62,12 +62,16 @@ WORKDIR /workspace
 # Crear estructura de directorios
 RUN mkdir -p /workspace/{resultados,scripts,nse,docs,reports}
 
+# Crear directorios de scripts
+RUN mkdir -p /workspace/scripts /workspace/nse
+
 # Copiar scripts personalizados
 COPY scripts/ /workspace/scripts/
 COPY nse/ /workspace/nse/
 
 # Hacer ejecutables los scripts
-RUN chmod +x /workspace/scripts/*.py /workspace/scripts/*.sh 2>/dev/null || true
+RUN find /workspace/scripts -name "*.py" -exec chmod +x {} \; 2>/dev/null || true
+RUN find /workspace/scripts -name "*.sh" -exec chmod +x {} \; 2>/dev/null || true
 
 # Crear usuario de trabajo
 RUN useradd -m -s /bin/bash -u 1000 labuser && \
@@ -78,7 +82,7 @@ RUN useradd -m -s /bin/bash -u 1000 labuser && \
 EXPOSE 22 8080
 
 # Script de inicio
-COPY entrypoint.sh /entrypoint.sh
+COPY containers/kali/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # Cambiar a usuario no-root
