@@ -2,7 +2,7 @@
 
 Esta guía te ayudará a configurar y ejecutar el laboratorio de escaneo de vulnerabilidades usando contenedores Docker.
 
-## 🚀 Inicio Rápido
+## Inicio Rápido
 
 ### Prerrequisitos
 
@@ -15,8 +15,8 @@ Esta guía te ayudará a configurar y ejecutar el laboratorio de escaneo de vuln
 
 1. **Clonar o descargar el proyecto**
    ```bash
-   git clone <repository-url>
-   cd lab-nmap-nessus-docker
+   git clone https://github.com/la00429/Laboratorio_Nessus_Nmap_.git
+   cd Laboratorio_Nessus_Nmap_
    ```
 
 2. **Configurar variables de entorno**
@@ -35,7 +35,7 @@ Esta guía te ayudará a configurar y ejecutar el laboratorio de escaneo de vuln
    python3 scripts/docker-lab-helper.py status
    ```
 
-## 📋 Arquitectura del Laboratorio
+## Arquitectura del Laboratorio
 
 ### Red Docker
 - **Subnet**: `10.10.0.0/24`
@@ -52,7 +52,7 @@ Esta guía te ayudará a configurar y ejecutar el laboratorio de escaneo de vuln
 | **Windows Target** | 10.10.0.30 | 8139 (SMB) | Simulador Windows para escaneos credentialed |
 | **Nessus** | 10.10.0.100 | 8834 (HTTPS) | Escáner de vulnerabilidades |
 
-## 🛠️ Uso del Laboratorio
+## Uso del Laboratorio
 
 ### Acceso a Contenedores
 
@@ -206,7 +206,7 @@ docker system df
 docker system prune -a
 ```
 
-## 🚨 Solución de Problemas
+## Solución de Problemas
 
 ### Contenedor no inicia
 ```bash
@@ -243,7 +243,7 @@ netstat -tlnp | grep 8834
 docker-compose restart nessus
 ```
 
-## 📊 Ejercicios Prácticos
+## Ejercicios Prácticos
 
 ### Módulo 1: Escaneo Básico
 1. Descubrir hosts vivos en la red
@@ -269,7 +269,7 @@ docker-compose restart nessus
 3. Analizar plugins y CVSS
 4. Exportar reportes
 
-## 🔒 Consideraciones de Seguridad
+## Consideraciones de Seguridad
 
 - **Aislar el laboratorio**: Nunca conectar a redes de producción
 - **Credenciales**: Cambiar contraseñas por defecto en producción

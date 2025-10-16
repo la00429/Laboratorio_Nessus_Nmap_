@@ -2,9 +2,9 @@
 
 Esta guía te ayudará a decidir entre la versión Docker y la versión de máquinas virtuales del laboratorio.
 
-## 📊 Tabla Comparativa
+## Tabla Comparativa
 
-| Aspecto | 🐳 Docker | 🖥️ Máquinas Virtuales |
+| Aspecto | Docker | Máquinas Virtuales |
 |---------|-----------|----------------------|
 | **Facilidad de Setup** | ⭐⭐⭐⭐⭐ Muy fácil | ⭐⭐⭐ Moderada |
 | **Tiempo de Instalación** | 5-10 minutos | 2-4 horas |
@@ -17,9 +17,9 @@ Esta guía te ayudará a decidir entre la versión Docker y la versión de máqu
 | **Escalabilidad** | ⭐⭐⭐⭐⭐ Excelente | ⭐⭐ Limitada |
 | **Curva de Aprendizaje** | ⭐⭐⭐⭐ Fácil | ⭐⭐⭐ Moderada |
 
-## 🐳 Ventajas de Docker
+## Ventajas de Docker
 
-### ✅ Pros
+### Pros
 - **Setup rápido**: Un comando para tener todo funcionando
 - **Recursos eficientes**: Menor uso de RAM y CPU
 - **Portabilidad total**: Funciona en Windows, Mac, Linux
@@ -30,22 +30,22 @@ Esta guía te ayudará a decidir entre la versión Docker y la versión de máqu
 - **Aislamiento de red**: Red Docker completamente aislada
 - **Backup/restore**: Volúmenes Docker fáciles de manejar
 
-### ❌ Contras
+### Contras
 - **Menos realista**: Contenedores vs sistemas operativos completos
 - **Limitaciones de red**: Algunas técnicas avanzadas pueden no funcionar
 - **Dependencia de Docker**: Requiere Docker instalado
 - **Debugging complejo**: Problemas de red pueden ser difíciles de resolver
 
-### 🎯 Ideal para:
+### Ideal para:
 - **Estudiantes**: Setup rápido y fácil
 - **Demostraciones**: Entorno reproducible
 - **Desarrollo**: Iteración rápida
 - **Entornos limitados**: Poca RAM/disco disponible
 - **Clases**: Múltiples estudiantes con mismo entorno
 
-## 🖥️ Ventajas de Máquinas Virtuales
+## Ventajas de Máquinas Virtuales
 
-### ✅ Pros
+### Pros
 - **Realismo total**: Sistemas operativos completos
 - **Flexibilidad máxima**: Configuración completa del sistema
 - **Técnicas avanzadas**: Todas las técnicas de red funcionan
@@ -55,7 +55,7 @@ Esta guía te ayudará a decidir entre la versión Docker y la versión de máqu
 - **Debugging**: Herramientas tradicionales de sistema
 - **Experiencia real**: Simula entorno de producción
 
-### ❌ Contras
+### Contras
 - **Setup complejo**: Requiere configuración manual de cada VM
 - **Recursos intensivos**: Mucha RAM y espacio en disco
 - **Tiempo de instalación**: Horas para configurar todo
@@ -63,40 +63,40 @@ Esta guía te ayudará a decidir entre la versión Docker y la versión de máqu
 - **Portabilidad limitada**: Archivos de VM específicos por plataforma
 - **Curva de aprendizaje**: Requiere conocimiento de virtualización
 
-### 🎯 Ideal para:
+### Ideal para:
 - **Profesionales**: Entorno más realista
 - **Investigación**: Técnicas avanzadas de red
 - **Certificaciones**: Preparación para exámenes reales
 - **Entornos de producción**: Simulación más fiel
 - **Recursos abundantes**: Mucha RAM/disco disponible
 
-## 🎯 Recomendaciones por Caso de Uso
+## Recomendaciones por Caso de Uso
 
-### 👨‍🎓 Para Estudiantes
+### Para Estudiantes
 **Recomendado: Docker**
 - Setup en 10 minutos
 - Menos recursos necesarios
 - Enfoque en aprender las herramientas, no en configurar el entorno
 
-### 👨‍💼 Para Profesionales
+### Para Profesionales
 **Recomendado: Máquinas Virtuales**
 - Experiencia más realista
 - Mejor preparación para entornos reales
 - Flexibilidad para técnicas avanzadas
 
-### 🏫 Para Clases/Workshops
+### Para Clases/Workshops
 **Recomendado: Docker**
 - Todos los estudiantes tienen el mismo entorno
 - Fácil distribución del laboratorio
 - Menos problemas técnicos
 
-### 🔬 Para Investigación
+### Para Investigación
 **Recomendado: Máquinas Virtuales**
 - Control total sobre el entorno
 - Técnicas de red avanzadas
 - Comportamiento más predecible
 
-### 🏢 Para Demostraciones
+### Para Demostraciones
 **Recomendado: Docker**
 - Setup rápido para clientes
 - Fácil transporte en laptop
@@ -129,12 +129,12 @@ Si ya tienes VMs y quieres migrar a Docker:
 
 3. **Importar datos**: Copiar a volúmenes Docker
 
-## 🚀 Inicio Rápido por Opción
+## Inicio Rápido por Opción
 
 ### Docker (5 minutos)
 ```bash
-git clone <repo>
-cd lab-nmap-nessus
+git clone https://github.com/la00429/Laboratorio_Nessus_Nmap_.git
+cd Laboratorio_Nessus_Nmap_
 ./setup.sh
 docker-compose up -d
 make status
@@ -147,7 +147,7 @@ make status
 4. Instalar y configurar servicios
 5. Verificar conectividad
 
-## 💡 Consejos Finales
+## Consejos Finales
 
 ### Si eliges Docker:
 - Usa `make` commands para gestión fácil
@@ -161,7 +161,7 @@ make status
 - Usa herramientas de gestión como Vagrant si es posible
 - Mantén las VMs actualizadas
 
-## 🤝 Soporte
+## Soporte
 
 Para ambas opciones:
 - **Documentación**: Revisar guías específicas

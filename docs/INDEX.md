@@ -1,4 +1,4 @@
-# 📚 Índice de Documentación - Laboratorio Nmap + Nessus
+# Índice de Documentación - Laboratorio Nmap + Nessus
 
 Esta es la documentación completa del laboratorio de escaneo de vulnerabilidades. Elige la opción que mejor se adapte a tus necesidades.
 
@@ -44,7 +44,7 @@ Esta es la documentación completa del laboratorio de escaneo de vulnerabilidade
 - **[DVWA](../containers/dvwa/)** - Aplicación web vulnerable
 - **[Windows Target](../containers/windows-target/)** - Simulador Windows
 
-## 🖥️ Documentación Máquinas Virtuales
+## Documentación Máquinas Virtuales
 
 ### Guía Principal
 - **[Guía Original](../guia.md)** - Instrucciones completas para VMs
@@ -56,7 +56,7 @@ Esta es la documentación completa del laboratorio de escaneo de vulnerabilidade
 - Instalación de sistemas operativos
 - Configuración de servicios
 
-## 🛠️ Scripts y Herramientas
+## Scripts y Herramientas
 
 ### Scripts de Automatización
 - **[parse_nmap_xml.py](../scripts/parse_nmap_xml.py)** - Parser de resultados Nmap
@@ -160,13 +160,19 @@ Este laboratorio está diseñado únicamente para fines educativos. Ver archivo 
 
 ---
 
-## 🗺️ Navegación Rápida
+## Navegación Rápida
 
 ### Para Estudiantes (Docker)
 1. [Comparación](COMPARISON.md) → [Inicio Rápido](QUICKSTART.md) → [Configuración](DOCKER_SETUP.md)
+   ```bash
+   git clone https://github.com/la00429/Laboratorio_Nessus_Nmap_.git
+   ```
 
 ### Para Profesionales (VMs)
 1. [Comparación](COMPARISON.md) → [Guía Original](../guia.md) → [Esquema](../esquema.dot)
+   ```bash
+   git clone https://github.com/la00429/Laboratorio_Nessus_Nmap_.git
+   ```
 
 ### Para Instructores
 1. [README Principal](../README.MD) → [Comparación](COMPARISON.md) → Documentación específica
@@ -176,6 +182,6 @@ Este laboratorio está diseñado únicamente para fines educativos. Ver archivo 
 
 ---
 
-**¡Bienvenido al laboratorio de escaneo de vulnerabilidades!** 🎉
+**¡Bienvenido al laboratorio de escaneo de vulnerabilidades!**
 
 > Documentación mantenida por el equipo H5 - Redes y Seguridad

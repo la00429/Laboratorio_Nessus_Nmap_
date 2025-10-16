@@ -1,8 +1,8 @@
-# 🚀 Guía de Inicio Rápido - Laboratorio Docker
+# Guía de Inicio Rápido - Laboratorio Docker
 
 Esta guía te permitirá tener el laboratorio funcionando en menos de 10 minutos.
 
-## ⚡ Inicio Express
+## Inicio Express
 
 ### 1. Verificar Prerrequisitos
 ```bash
@@ -14,8 +14,12 @@ docker-compose --version
 df -h
 ```
 
-### 2. Configurar Variables
+### 2. Clonar Repositorio
 ```bash
+# Clonar el repositorio
+git clone https://github.com/la00429/Laboratorio_Nessus_Nmap_.git
+cd Laboratorio_Nessus_Nmap_
+
 # Copiar archivo de configuración
 cp env.example .env
 
@@ -23,7 +27,7 @@ cp env.example .env
 nano .env
 ```
 
-### 3. Iniciar Laboratorio
+### 4. Iniciar Laboratorio
 ```bash
 # Iniciar todos los contenedores
 docker-compose up -d
@@ -32,7 +36,7 @@ docker-compose up -d
 docker-compose ps
 ```
 
-### 4. Verificar Conectividad
+### 5. Verificar Conectividad
 ```bash
 # Usar el helper script
 python3 scripts/docker-lab-helper.py status
@@ -41,7 +45,7 @@ python3 scripts/docker-lab-helper.py status
 docker exec kali-lab ping -c 1 10.10.0.20
 ```
 
-## 🎯 Primeros Pasos
+## Primeros Pasos
 
 ### Acceder a Kali Linux
 ```bash
@@ -69,7 +73,7 @@ nmap -sS -sV 10.10.0.20
 3. Contraseña: `password`
 4. Configurar nivel de seguridad
 
-## 🔧 Comandos Esenciales
+## Comandos Esenciales
 
 ### Gestión del Laboratorio
 ```bash
@@ -118,7 +122,7 @@ docker-compose down -v
 - [ ] Conectividad entre contenedores
 - [ ] Primer escaneo Nmap ejecutado
 
-## 🚨 Problemas Comunes
+## Problemas Comunes
 
 ### Contenedores no inician
 ```bash
@@ -155,7 +159,7 @@ docker-compose down
 docker-compose up -d
 ```
 
-## 🎓 Siguiente Paso
+## Siguiente Paso
 
 Una vez que tengas el laboratorio funcionando:
 
@@ -166,4 +170,4 @@ Una vez que tengas el laboratorio funcionando:
 
 ---
 
-¡El laboratorio está listo! 🎉
+¡El laboratorio está listo!

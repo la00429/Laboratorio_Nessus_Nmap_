@@ -3,22 +3,22 @@
 > **Laboratorio de escaneo de vulnerabilidades y análisis de seguridad**  
 > Guía práctica para montar y ejecutar un laboratorio completo de Nmap, NSE y Nessus con integración de herramientas.
 
-## 📋 Tabla de Contenidos
+## Tabla de Contenidos
 
-- [Objetivos del Laboratorio](#-objetivos-del-laboratorio)
-- [Arquitectura del Laboratorio](#-arquitectura-del-laboratorio)
-- [Opciones de Instalación](#-opciones-de-instalación)
-  - [🐳 Opción Docker (Recomendada)](#-opción-docker-recomendada)
-  - [🖥️ Opción Máquinas Virtuales](#️-opción-máquinas-virtuales)
-- [Módulos del Laboratorio](#-módulos-del-laboratorio)
-- [Ejercicios Prácticos](#-ejercicios-prácticos)
-- [Herramientas y Scripts](#-herramientas-y-scripts)
-- [Reportes y Análisis](#-reportes-y-análisis)
-- [Consideraciones de Seguridad](#-consideraciones-de-seguridad)
+- [Objetivos del Laboratorio](#objetivos-del-laboratorio)
+- [Arquitectura del Laboratorio](#arquitectura-del-laboratorio)
+- [Opciones de Instalación](#opciones-de-instalación)
+  - [Opción Docker (Recomendada)](#opción-docker-recomendada)
+  - [Opción Máquinas Virtuales](#opción-máquinas-virtuales)
+- [Módulos del Laboratorio](#módulos-del-laboratorio)
+- [Ejercicios Prácticos](#ejercicios-prácticos)
+- [Herramientas y Scripts](#herramientas-y-scripts)
+- [Reportes y Análisis](#reportes-y-análisis)
+- [Consideraciones de Seguridad](#consideraciones-de-seguridad)
 
 ---
 
-## 🎯 Objetivos del Laboratorio
+## Objetivos del Laboratorio
 
 * **Entender diferencias** entre escaneo de red, detección de servicios, detección de versiones y análisis de vulnerabilidades
 * **Dominar Nmap**: opciones, timing, técnicas avanzadas y scripting (NSE)
@@ -28,7 +28,7 @@
 
 ---
 
-## 🏗️ Arquitectura del Laboratorio
+## Arquitectura del Laboratorio
 
 ### Red del Laboratorio
 - **Subnet**: `10.10.0.0/24`
@@ -47,9 +47,9 @@
 
 ---
 
-## 🚀 Opciones de Instalación
+## Opciones de Instalación
 
-### 🐳 Opción Docker (Recomendada)
+### Opción Docker (Recomendada)
 
 **Ventajas**: Portabilidad, facilidad de uso, aislamiento completo, rápido setup
 
@@ -62,8 +62,8 @@
 #### Instalación Express
 ```bash
 # 1. Clonar repositorio
-git clone <repository-url>
-cd lab-nmap-nessus
+git clone https://github.com/la00429/Laboratorio_Nessus_Nmap_.git
+cd Laboratorio_Nessus_Nmap_
 
 # 2. Configurar automáticamente
 chmod +x setup.sh
@@ -110,7 +110,7 @@ make interactive    # Modo interactivo
 
 ---
 
-### 🖥️ Opción Máquinas Virtuales
+### Opción Máquinas Virtuales
 
 **Ventajas**: Control total, simulación real de hardware, flexibilidad avanzada
 
@@ -173,7 +173,7 @@ VBoxManage hostonlyif ipconfig vboxnet0 --ip 10.10.0.1 --netmask 255.255.255.0
 
 ---
 
-## 📚 Módulos del Laboratorio
+## Módulos del Laboratorio
 
 ### Módulo 1: Fundamentos y Reconocimiento (Nmap Básico)
 
@@ -266,7 +266,7 @@ python3 scripts/docker-lab-helper.py interactive
 
 ---
 
-## 🛠️ Ejercicios Prácticos
+## Ejercicios Prácticos
 
 ### Flujo de Trabajo Completo
 
@@ -307,7 +307,7 @@ python3 scripts/parse_nmap_xml.py resultados/metasploitable_full.xml --csv repor
 
 ---
 
-## 🔧 Herramientas y Scripts
+## Herramientas y Scripts
 
 ### Scripts de Automatización
 
@@ -347,7 +347,7 @@ python3 scripts/parse_nmap_xml.py resultados/metasploitable_full.xml --csv repor
 
 ---
 
-## 📊 Reportes y Análisis
+## Reportes y Análisis
 
 ### Formato de Reportes
 
@@ -387,35 +387,35 @@ Resumen ejecutivo:
 
 ---
 
-## 🔒 Consideraciones de Seguridad
+## Consideraciones de Seguridad
 
 ### Buenas Prácticas
 
 #### Aislamiento
-- ✅ **Laboratorio aislado**: Nunca conectar a redes de producción
-- ✅ **Red host-only**: Aislar completamente del resto de la red
-- ✅ **Snapshots**: Hacer backup antes de cambios importantes
+- **Laboratorio aislado**: Nunca conectar a redes de producción
+- **Red host-only**: Aislar completamente del resto de la red
+- **Snapshots**: Hacer backup antes de cambios importantes
 
 #### Credenciales
-- ✅ **Cambiar por defecto**: Modificar contraseñas de ejemplo
-- ✅ **Almacenar seguras**: No commitear credenciales reales
-- ✅ **Rotación**: Cambiar periódicamente en entornos de prueba
+- **Cambiar por defecto**: Modificar contraseñas de ejemplo
+- **Almacenar seguras**: No commitear credenciales reales
+- **Rotación**: Cambiar periódicamente en entornos de prueba
 
 #### Monitoreo
-- ✅ **Logs**: Mantener registro de todas las actividades
-- ✅ **Alertas**: Configurar notificaciones de actividades sospechosas
-- ✅ **Auditoría**: Revisar regularmente accesos y cambios
+- **Logs**: Mantener registro de todas las actividades
+- **Alertas**: Configurar notificaciones de actividades sospechosas
+- **Auditoría**: Revisar regularmente accesos y cambios
 
 ### Advertencias Importantes
 
-⚠️ **NUNCA** escanear activos fuera del laboratorio sin autorización explícita  
-⚠️ **NUNCA** usar credenciales reales en sistemas de producción  
-⚠️ **SIEMPRE** documentar pruebas de explotación y revertir cambios  
-⚠️ **SIEMPRE** evitar escaneos intrusivos en entornos productivos  
+**NUNCA** escanear activos fuera del laboratorio sin autorización explícita  
+**NUNCA** usar credenciales reales en sistemas de producción  
+**SIEMPRE** documentar pruebas de explotación y revertir cambios  
+**SIEMPRE** evitar escaneos intrusivos en entornos productivos  
 
 ---
 
-## 🎓 Checklist Final
+## Checklist Final
 
 ### Configuración Inicial
 - [ ] Red del laboratorio aislada y configurada
@@ -446,7 +446,7 @@ Resumen ejecutivo:
 
 ---
 
-## 📞 Soporte y Recursos
+## Soporte y Recursos
 
 ### Documentación Adicional
 - **[Comparación Docker vs VMs](docs/COMPARISON.md)** - Guía para elegir la mejor opción
@@ -472,7 +472,7 @@ python3 scripts/docker-lab-helper.py interactive  # Modo interactivo
 
 ---
 
-## 📄 Licencia
+## Licencia
 
 Este laboratorio está diseñado únicamente para fines educativos. Ver archivo `LICENSE` para más detalles.
 
