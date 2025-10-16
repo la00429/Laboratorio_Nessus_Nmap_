@@ -106,6 +106,11 @@ info: ## Mostrar información del laboratorio
 	@echo "$(BLUE)Información del laboratorio:$(NC)"
 	@python3 scripts/docker-lab-helper.py info || echo "$(YELLOW)Helper script no disponible$(NC)"
 
+fix: ## Solucionar problemas de Docker
+	@echo "$(BLUE)Solucionando problemas de Docker...$(NC)"
+	@chmod +x fix-docker.sh
+	@./fix-docker.sh
+
 clean: ## Limpiar contenedores y volúmenes
 	@echo "$(RED)¿Estás seguro? Esto eliminará todos los datos. (y/N)$(NC)"
 	@read -r confirm && [ "$$confirm" = "y" ] || exit 1

@@ -124,6 +124,15 @@ docker-compose down -v
 
 ## Problemas Comunes
 
+### Error de formato de imagen inválido
+Si ves el error "invalid reference format" al ejecutar `docker-compose up -d`:
+
+```bash
+# Solución rápida
+chmod +x fix-docker.sh
+./fix-docker.sh
+```
+
 ### Contenedores no inician
 ```bash
 # Ver logs
