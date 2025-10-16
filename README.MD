@@ -39,11 +39,13 @@
 
 | Componente | IP | Función | Acceso |
 |------------|----|---------|---------| 
-| **Kali Linux** | 10.10.0.10 | Herramientas de escaneo y ataque | SSH, herramientas CLI |
-| **Metasploitable** | 10.10.0.20 | Sistema Linux vulnerable | SSH, servicios vulnerables |
-| **DVWA** | 10.10.0.21 | Aplicación web vulnerable | HTTP, base de datos |
-| **Windows Target** | 10.10.0.30 | Simulador Windows | SMB, RDP, servicios Windows |
-| **Nessus** | 10.10.0.100 | Escáner de vulnerabilidades | Web UI HTTPS |
+| **Kali Linux** | 10.10.0.10 | Herramientas de escaneo y ataque | SSH:2222, Burp:8081 |
+| **Metasploitable** | 10.10.0.20 | Sistema Linux vulnerable | SSH:2220, Web:8050, SMB:8082 |
+| **DVWA** | 10.10.0.30 | Aplicación web vulnerable | HTTP:8180, MySQL:8330 |
+| **Windows Target** | 10.10.0.40 | Simulador Windows | RDP:8149, SMB:8445 |
+| **Nessus** | 10.10.0.100 | Escáner de vulnerabilidades | Web UI:8834 (Simulador) |
+| **Elasticsearch** | 10.10.0.50 | Motor de búsqueda | API:9200 |
+| **Kibana** | 10.10.0.60 | Visualización de datos | Web UI:5601 |
 
 ---
 
@@ -80,9 +82,10 @@ python3 scripts/docker-lab-helper.py status
 
 #### Acceso Inmediato
 - **Kali Linux**: `ssh root@localhost -p 2222` (password: kali123)
-- **Nessus**: https://localhost:8834 (admin/admin123)
+- **Nessus**: https://localhost:8834 (admin/admin123) - **Simulador funcional**
 - **DVWA**: http://localhost:8180 (admin/password)
-- **Metasploitable**: `ssh root@localhost -p 2220` (password: password)
+- **Metasploitable**: `ssh msfadmin@localhost -p 2220` (password: msfadmin)
+- **Kibana**: http://localhost:5601 (ELK Stack para análisis)
 
 #### Comandos Útiles Docker
 ```bash
@@ -92,6 +95,7 @@ make stop           # Detener todo
 make restart        # Reiniciar
 make status         # Ver estado
 make logs           # Ver logs
+make fix            # Solucionar problemas de imágenes
 
 # Acceso a contenedores
 make shell-kali     # Acceder a Kali
@@ -102,6 +106,11 @@ make shell-dvwa     # Acceder a DVWA
 make nmap-scan      # Escaneo básico
 make test-connectivity # Probar conectividad
 make interactive    # Modo interactivo
+
+# Limpieza completa
+docker-compose down -v  # Detener y eliminar volúmenes
+docker system prune -f  # Limpiar sistema Docker
+docker-compose build --no-cache  # Reconstruir sin caché
 ```
 
 #### Documentación Docker
@@ -201,10 +210,13 @@ sudo nmap -sS -sV -p 22,80,139,445,3306 10.10.0.20 -oN resultados/versiones.txt
 sudo nmap -sU -p 53,67,123 10.10.0.20 -T3 -oN resultados/udp.txt
 
 # 5. Detección de OS
-sudo nmap -O 10.10.0.30 -oN resultados/os_detect.txt
+sudo nmap -O 10.10.0.40 -oN resultados/os_detect.txt
 
 # 6. Escaneo agresivo (combinado)
 sudo nmap -A -T4 10.10.0.20 -oN resultados/agresivo.txt
+
+# 7. Escaneo web específico
+sudo nmap -p80,443 --script=http-* 10.10.0.30 -oA resultados/dvwa_web
 ```
 
 ### Módulo 2: NSE (Nmap Scripting Engine)
@@ -220,10 +232,16 @@ sudo nmap -A -T4 10.10.0.20 -oN resultados/agresivo.txt
 sudo nmap -sS -sV --script=vuln 10.10.0.20 -oN resultados/nse_vuln.txt
 
 # 2. Scripts HTTP específicos
-sudo nmap -p80 --script=http-enum,http-vuln-cve2017-5638 10.10.0.21 -oN resultados/http_nse.txt
+sudo nmap -p80 --script=http-enum,http-vuln-cve2017-5638 10.10.0.30 -oN resultados/http_nse.txt
 
 # 3. Script personalizado
 sudo nmap -sV --script my-banner 10.10.0.20 -oN resultados/my_banner.txt
+
+# 4. Scripts SMB para Windows Target
+sudo nmap -p445 --script=smb-* 10.10.0.40 -oN resultados/smb_nse.txt
+
+# 5. Scripts de autenticación
+sudo nmap --script=auth 10.10.0.20,10.10.0.30 -oN resultados/auth_nse.txt
 ```
 
 ### Módulo 3: Procesamiento y Automatización (Python)
@@ -276,7 +294,7 @@ python3 scripts/docker-lab-helper.py interactive
 nmap -sn 10.10.0.0/24
 
 # Escanear puertos en hosts descubiertos
-nmap -sS -sV 10.10.0.20 10.10.0.21 10.10.0.30
+nmap -sS -sV 10.10.0.20 10.10.0.30 10.10.0.40
 ```
 
 #### 2. Análisis Detallado
@@ -285,7 +303,10 @@ nmap -sS -sV 10.10.0.20 10.10.0.21 10.10.0.30
 nmap -A -sV --script=vuln 10.10.0.20 -oA resultados/metasploitable_full
 
 # Escaneo específico por servicios
-nmap -p80,443 --script=http-* 10.10.0.21 -oA resultados/dvwa_web
+nmap -p80,443 --script=http-* 10.10.0.30 -oA resultados/dvwa_web
+
+# Escaneo Windows Target
+nmap -sS -sV --script=smb-* 10.10.0.40 -oA resultados/windows_target
 ```
 
 #### 3. Procesamiento de Resultados
@@ -370,7 +391,8 @@ Resumen ejecutivo:
 | Host | Puerto | Servicio | Plugin/CVE | Severidad | Recomendación |
 |------|--------|----------|------------|-----------|---------------|
 | 10.10.0.20 | 80 | http | CVE-2021-44228 | Critical | Actualizar Apache |
-| 10.10.0.21 | 3306 | mysql | CVE-2020-1472 | High | Cambiar credenciales |
+| 10.10.0.30 | 3306 | mysql | CVE-2020-1472 | High | Cambiar credenciales |
+| 10.10.0.40 | 445 | smb | CVE-2020-1472 | High | Parchear SMB |
 
 ### Correlación Nmap ↔ Nessus
 
@@ -465,10 +487,54 @@ python3 scripts/docker-lab-helper.py interactive  # Modo interactivo
 ```
 
 ### Resolución de Problemas
+
+#### Problemas Comunes Docker
+1. **Contenedores reiniciándose**:
+   ```bash
+   # Ver logs del contenedor problemático
+   docker-compose logs [nombre-contenedor]
+   
+   # Reconstruir imagen específica
+   docker-compose build --no-cache [nombre-contenedor]
+   ```
+
+2. **Problemas de imágenes**:
+   ```bash
+   # Ejecutar script de reparación
+   make fix
+   # o
+   ./fix-docker.sh
+   ```
+
+3. **Puertos ocupados**:
+   ```bash
+   # Verificar puertos en uso (Windows)
+   netstat -an | findstr :2222
+   
+   # Cambiar puertos en docker-compose.yml si es necesario
+   ```
+
+4. **Limpieza completa**:
+   ```bash
+   # Detener todo y limpiar
+   docker-compose down -v
+   docker system prune -f
+   docker-compose build --no-cache
+   docker-compose up -d
+   ```
+
+#### Problemas Comunes VMs
 1. **Verificar conectividad**: `ping` entre todos los componentes
 2. **Revisar logs**: Docker logs o logs de VMs
 3. **Verificar recursos**: RAM, CPU, espacio en disco
 4. **Consultar documentación**: Guías específicas por plataforma
+
+#### Mejoras Implementadas
+- **DVWA**: Corregido comando Apache para Ubuntu 20.04
+- **Metasploitable**: Agregado loop de supervisión de servicios
+- **Windows Target**: Optimizado entrypoint con supervisión
+- **Nessus**: Simulador funcional para propósitos educativos
+- **Kali**: Configuración SSH mejorada y librerías Python actualizadas
 
 ---
 
@@ -478,7 +544,34 @@ Este laboratorio está diseñado únicamente para fines educativos. Ver archivo 
 
 ---
 
+---
+
+## Estado Actual del Laboratorio
+
+### ✅ **Laboratorio Completamente Funcional**
+
+| Componente | Estado | Última Actualización |
+|------------|--------|---------------------|
+| **Docker Compose** | ✅ Funcionando | Enero 2025 |
+| **Todos los Contenedores** | ✅ Estables | Enero 2025 |
+| **Correcciones Aplicadas** | ✅ Completadas | Enero 2025 |
+| **Documentación** | ✅ Actualizada | Enero 2025 |
+
+### 🔧 **Correcciones Implementadas**
+- ✅ DVWA: Apache corregido para Ubuntu 20.04
+- ✅ Metasploitable: Supervisión de servicios mejorada
+- ✅ Windows Target: Entrypoint optimizado
+- ✅ Nessus: Simulador funcional implementado
+- ✅ Kali: SSH y Python configurados correctamente
+- ✅ Puertos: Conflictos resueltos (8081, 8082)
+
+### 🚀 **Listo para Usar**
+El laboratorio está completamente operativo y listo para ejercicios de seguridad. Todos los contenedores están funcionando correctamente sin reinicios.
+
+---
+
 **¡Happy Hacking!** 🎉
 
-> Laboratorio creado para el equipo H5 - Redes y Seguridad  
-> Versión Docker y VM - 2025
+> Laboratorio creado para Redes de Datos 
+> Versión Docker y VM - 2025  
+> **Estado**: ✅ Completamente Funcional
