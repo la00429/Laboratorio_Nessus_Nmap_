@@ -69,7 +69,7 @@ else
 fi
 
 echo "Verificando conectividad de red..."
-if ping -c 1 10.10.0.1 >/dev/null 2>&1; then
+if nmap -sn 10.10.0.1 >/dev/null 2>&1; then
     echo "✓ Gateway accesible"
 else
     echo "⚠ Gateway no accesible"
@@ -85,7 +85,7 @@ echo ""
 
 echo "Verificando servicios objetivo..."
 for ip in 10.10.0.20 10.10.0.21 10.10.0.30; do
-    if ping -c 1 $ip >/dev/null 2>&1; then
+    if nmap -sn $ip >/dev/null 2>&1; then
         echo "✓ $ip accesible"
     else
         echo "⚠ $ip no accesible"

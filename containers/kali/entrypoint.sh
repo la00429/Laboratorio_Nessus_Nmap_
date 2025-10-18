@@ -10,7 +10,7 @@ export DISPLAY=${DISPLAY:-:0}
 
 # Verificar conectividad de red
 echo "Verificando conectividad de red..."
-ping -c 1 10.10.0.1 > /dev/null 2>&1 && echo "✓ Gateway accesible" || echo "⚠ Gateway no accesible"
+nmap -sn 10.10.0.1 > /dev/null 2>&1 && echo "✓ Gateway accesible" || echo "⚠ Gateway no accesible"
 
 # Mostrar información del contenedor
 echo ""
@@ -31,7 +31,7 @@ echo ""
 # Verificar servicios objetivo
 echo "Verificando servicios objetivo..."
 for target in 10.10.0.20 10.10.0.21 10.10.0.30 10.10.0.100; do
-    ping -c 1 -W 1 $target > /dev/null 2>&1 && echo "✓ $target accesible" || echo "⚠ $target no accesible"
+    nmap -sn $target > /dev/null 2>&1 && echo "✓ $target accesible" || echo "⚠ $target no accesible"
 done
 
 echo ""
