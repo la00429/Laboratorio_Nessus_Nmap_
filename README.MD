@@ -55,6 +55,22 @@
 
 **Ventajas**: Portabilidad, facilidad de uso, aislamiento completo, rápido setup
 
+#### ⚡ Inicio Rápido (5 minutos)
+```bash
+# 1. Iniciar Docker Desktop (IMPORTANTE)
+# 2. Clonar repositorio
+git clone https://github.com/la00429/Laboratorio_Nessus_Nmap_.git
+cd Laboratorio_Nessus_Nmap_
+
+# 3. Construir e iniciar
+docker compose build
+docker compose up -d
+
+# 4. Verificar
+docker compose ps
+docker compose exec kali nmap -sn 10.10.0.0/24
+```
+
 #### Prerrequisitos
 - Docker Desktop o Docker Engine
 - Docker Compose v3.8+
@@ -62,22 +78,70 @@
 - Python 3.7+ (para scripts auxiliares)
 
 #### Instalación Express
+
+**PASO A PASO DETALLADO (Probado en Windows 10/11):**
+
 ```bash
 # 1. Clonar repositorio
 git clone https://github.com/la00429/Laboratorio_Nessus_Nmap_.git
 cd Laboratorio_Nessus_Nmap_
 
-# 2. Configurar automáticamente
-chmod +x setup.sh
-./setup.sh
+# 2. IMPORTANTE: Iniciar Docker Desktop primero
+# - Abrir Docker Desktop desde el menú de inicio
+# - Esperar a que se inicie completamente (ícono en bandeja del sistema)
+# - Verificar que esté ejecutándose: docker version
 
-# 3. Iniciar laboratorio
-docker-compose up -d
+# 3. Configurar automáticamente (Windows)
+bash setup.sh
+# Si falla, continuar con los pasos manuales
 
-# 4. Verificar estado
-make status
-# o
-python3 scripts/docker-lab-helper.py status
+# 4. Construir imágenes Docker
+docker compose build
+# NOTA: Usar "docker compose" (sin guión) en versiones recientes
+
+# 5. Iniciar laboratorio
+docker compose up -d
+
+# 6. Verificar estado
+docker compose ps
+
+# 7. Probar conectividad
+docker compose exec kali nmap -sn 10.10.0.0/24
+```
+
+**SOLUCIÓN A PROBLEMAS COMUNES:**
+
+**Problema 1: "docker-compose command not found"**
+```bash
+# Solución: Usar docker compose (sin guión)
+docker compose build
+docker compose up -d
+```
+
+**Problema 2: "Docker Desktop not running"**
+```bash
+# Verificar estado
+docker version
+# Si falla, iniciar Docker Desktop manualmente
+```
+
+**Problema 3: "WSL2 integration required"**
+- Abrir Docker Desktop
+- Ir a Settings > Resources > WSL Integration
+- Habilitar integración con WSL2
+- Reiniciar Docker Desktop
+
+#### Verificación Rápida
+```bash
+# 1. Verificar que todos los contenedores estén ejecutándose
+docker compose ps
+
+# 2. Probar conectividad de red
+docker compose exec kali nmap -sn 10.10.0.0/24
+
+# 3. Verificar que se detecten todos los hosts (debe mostrar 8 hosts)
+# Deberías ver: kali-lab, metasploitable-lab, dvwa-lab, windows-target-lab, 
+# elasticsearch-lab, kibana-lab, nessus-lab, y el gateway
 ```
 
 #### Acceso Inmediato
@@ -88,6 +152,32 @@ python3 scripts/docker-lab-helper.py status
 - **Kibana**: http://localhost:5601 (ELK Stack para análisis)
 
 #### Comandos Útiles Docker
+
+**Para Windows (usar docker compose sin guión):**
+```bash
+# Gestión del laboratorio
+docker compose up -d        # Iniciar todo
+docker compose down         # Detener todo
+docker compose restart      # Reiniciar
+docker compose ps           # Ver estado
+docker compose logs -f      # Ver logs en tiempo real
+
+# Acceso a contenedores
+docker compose exec kali bash      # Acceder a Kali
+docker compose exec nessus bash    # Acceder a Nessus
+docker compose exec dvwa bash      # Acceder a DVWA
+
+# Herramientas y pruebas
+docker compose exec kali nmap -sn 10.10.0.0/24  # Escaneo básico
+docker compose exec kali nmap -sS -sV 10.10.0.20  # Escaneo detallado
+
+# Limpieza completa
+docker compose down -v              # Detener y eliminar volúmenes
+docker system prune -f              # Limpiar sistema Docker
+docker compose build --no-cache     # Reconstruir sin caché
+```
+
+**Comandos Make (si están disponibles):**
 ```bash
 # Gestión del laboratorio
 make start          # Iniciar todo
@@ -106,11 +196,6 @@ make shell-dvwa     # Acceder a DVWA
 make nmap-scan      # Escaneo básico
 make test-connectivity # Probar conectividad
 make interactive    # Modo interactivo
-
-# Limpieza completa
-docker-compose down -v  # Detener y eliminar volúmenes
-docker system prune -f  # Limpiar sistema Docker
-docker-compose build --no-cache  # Reconstruir sin caché
 ```
 
 #### Documentación Docker
@@ -489,13 +574,45 @@ python3 scripts/docker-lab-helper.py interactive  # Modo interactivo
 ### Resolución de Problemas
 
 #### Problemas Comunes Docker
+
+**PROBLEMAS ESPECÍFICOS DE WINDOWS:**
+
+1. **"docker-compose command not found"**:
+   ```bash
+   # Solución: Usar docker compose (sin guión)
+   docker compose build
+   docker compose up -d
+   ```
+
+2. **"Docker Desktop not running"**:
+   ```bash
+   # Verificar estado
+   docker version
+   # Si falla, iniciar Docker Desktop manualmente desde el menú de inicio
+   ```
+
+3. **"WSL2 integration required"**:
+   - Abrir Docker Desktop
+   - Ir a Settings > Resources > WSL Integration
+   - Habilitar integración con WSL2
+   - Reiniciar Docker Desktop
+
+4. **"Unable to start container process"**:
+   ```bash
+   # Verificar que Docker Desktop esté ejecutándose
+   docker version
+   # Reiniciar Docker Desktop si es necesario
+   ```
+
+**PROBLEMAS GENERALES:**
+
 1. **Contenedores reiniciándose**:
    ```bash
    # Ver logs del contenedor problemático
-   docker-compose logs [nombre-contenedor]
+   docker compose logs [nombre-contenedor]
    
    # Reconstruir imagen específica
-   docker-compose build --no-cache [nombre-contenedor]
+   docker compose build --no-cache [nombre-contenedor]
    ```
 
 2. **Problemas de imágenes**:
@@ -517,10 +634,10 @@ python3 scripts/docker-lab-helper.py interactive  # Modo interactivo
 4. **Limpieza completa**:
    ```bash
    # Detener todo y limpiar
-   docker-compose down -v
+   docker compose down -v
    docker system prune -f
-   docker-compose build --no-cache
-   docker-compose up -d
+   docker compose build --no-cache
+   docker compose up -d
    ```
 
 #### Problemas Comunes VMs
