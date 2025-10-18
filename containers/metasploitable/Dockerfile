@@ -77,7 +77,8 @@ RUN echo 'service vsftpd' > /etc/xinetd.d/vsftpd && \
 
 # Script de inicio
 COPY containers/metasploitable/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN chmod +x /entrypoint.sh && \
+    sed -i 's/\r$//' /entrypoint.sh
 
 # Exponer puertos vulnerables
 EXPOSE 21 22 23 25 53 80 110 139 445 993 995 1723 3306 5432 5900 6001

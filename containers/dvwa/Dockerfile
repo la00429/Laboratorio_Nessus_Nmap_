@@ -70,7 +70,8 @@ COPY containers/dvwa/config/config.inc.php /var/www/html/config/config.inc.php
 
 # Script de inicio
 COPY containers/dvwa/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN chmod +x /entrypoint.sh && \
+    sed -i 's/\r$//' /entrypoint.sh
 
 # Exponer puertos
 EXPOSE 80 3306

@@ -75,7 +75,8 @@ RUN echo "Windows Target Simulator" > /shared/readme.txt && \
 
 # Script de inicio
 COPY containers/windows-target/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN chmod +x /entrypoint.sh && \
+    sed -i 's/\r$//' /entrypoint.sh
 
 # Exponer puertos
 EXPOSE 22 135 139 445 3389 1433

@@ -83,7 +83,8 @@ EXPOSE 22 8080
 
 # Script de inicio
 COPY containers/kali/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN chmod +x /entrypoint.sh && \
+    sed -i 's/\r$//' /entrypoint.sh
 
 # Mantener como root para SSH
 # USER labuser

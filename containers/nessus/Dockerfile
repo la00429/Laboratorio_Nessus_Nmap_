@@ -79,7 +79,8 @@ RUN chmod +x /init-nessus.sh
 
 # Crear script de entrada
 COPY containers/nessus/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN chmod +x /entrypoint.sh && \
+    sed -i 's/\r$//' /entrypoint.sh
 
 # Exponer puertos
 EXPOSE 8834
