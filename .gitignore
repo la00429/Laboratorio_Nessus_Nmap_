@@ -1,0 +1,48 @@
+# Archivos de datos de Elasticsearch (no incluir en repositorio)
+containers/elasticsearch/data/
+
+# Archivos de datos de Docker
+data/
+
+# Archivos de resultados temporales
+resultados/*.xml
+resultados/*.txt
+resultados/*.nmap
+reports/*.csv
+reports/*.json
+
+# Archivos de configuración local
+.env
+
+# Archivos de backup
+backups/
+
+# Archivos de logs
+*.log
+
+# Archivos temporales del sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Archivos de Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+
+# Archivos de Node.js (si se usan)
+node_modules/
+npm-debug.log*
+
+# Archivos de Docker
+.dockerignore
