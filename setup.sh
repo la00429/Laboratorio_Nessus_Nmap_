@@ -173,11 +173,23 @@ done
 # Construir imágenes Docker
 log "Construyendo imágenes Docker..."
 
-if docker-compose build; then
+# Verificar que Docker esté ejecutándose
+if ! docker version >/dev/null 2>&1; then
+    log_error "Docker no está ejecutándose. Inicia Docker Desktop primero."
+    exit 1
+fi
+
+if docker compose build; then
     log_success "Imágenes Docker construidas correctamente"
 else
     log_error "Error al construir imágenes Docker"
-    exit 1
+    log "Intentando con docker-compose (versión anterior)..."
+    if docker-compose build; then
+        log_success "Imágenes Docker construidas con docker-compose"
+    else
+        log_error "Error al construir imágenes Docker con ambos comandos"
+        exit 1
+    fi
 fi
 
 # Mostrar información final
@@ -191,9 +203,11 @@ log_success "Laboratorio Docker configurado correctamente"
 echo ""
 echo "Próximos pasos:"
 echo "1. Iniciar el laboratorio:"
-echo "   ${BLUE}docker-compose up -d${NC}"
+echo "   ${BLUE}docker compose up -d${NC}"
+echo "   (o ${BLUE}docker-compose up -d${NC} si tienes versión anterior)"
 echo ""
 echo "2. Verificar estado:"
+echo "   ${BLUE}docker compose ps${NC}"
 echo "   ${BLUE}python3 scripts/docker-lab-helper.py status${NC}"
 echo ""
 echo "3. Acceder a Kali Linux:"
