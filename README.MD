@@ -1,30 +1,27 @@
-# Laboratorio Nmap + Nessus - Guía Completa
+# Laboratorio Nmap + Nessus
 
-> **Laboratorio de escaneo de vulnerabilidades y análisis de seguridad**  
-> Guía práctica para montar y ejecutar un laboratorio completo de Nmap, NSE y Nessus con integración de herramientas.
+Laboratorio de escaneo de vulnerabilidades y análisis de seguridad. Guía completa para montar y ejecutar un laboratorio de Nmap, NSE y Nessus con Docker y Máquinas Virtuales.
 
 ## Tabla de Contenidos
 
 - [Objetivos del Laboratorio](#objetivos-del-laboratorio)
 - [Arquitectura del Laboratorio](#arquitectura-del-laboratorio)
-- [Opciones de Instalación](#opciones-de-instalación)
   - [Opción Docker (Recomendada)](#opción-docker-recomendada)
   - [Opción Máquinas Virtuales](#opción-máquinas-virtuales)
 - [Módulos del Laboratorio](#módulos-del-laboratorio)
 - [Ejercicios Prácticos](#ejercicios-prácticos)
-- [Herramientas y Scripts](#herramientas-y-scripts)
-- [Reportes y Análisis](#reportes-y-análisis)
-- [Consideraciones de Seguridad](#consideraciones-de-seguridad)
+- [Scripts y Herramientas](#scripts-y-herramientas)
+- [Solución de Problemas](#solución-de-problemas)
 
 ---
 
 ## Objetivos del Laboratorio
 
-* **Entender diferencias** entre escaneo de red, detección de servicios, detección de versiones y análisis de vulnerabilidades
-* **Dominar Nmap**: opciones, timing, técnicas avanzadas y scripting (NSE)
-* **Dominar Nessus**: creación de políticas, escaneos credentialed vs non-credentialed, interpretación de plugins y reportes
-* **Integrar resultados**: exportar, correlacionar Nmap y Nessus y priorizar remediaciones
-* **Automatizar procesos**: scripts Python para procesamiento y análisis de datos
+- **Entender diferencias** entre escaneo de red, detección de servicios, detección de versiones y análisis de vulnerabilidades
+- **Dominar Nmap**: opciones, timing, técnicas avanzadas y scripting (NSE)
+- **Dominar Nessus**: creación de políticas, escaneos credentialed vs non-credentialed, interpretación de plugins y reportes
+- **Integrar resultados**: exportar, correlacionar Nmap y Nessus y priorizar remediaciones
+- **Automatizar procesos**: scripts Python para procesamiento y análisis de datos
 
 ---
 
@@ -39,219 +36,150 @@
 
 | Componente | IP | Función | Acceso |
 |------------|----|---------|---------| 
-| **Kali Linux** | 10.10.0.10 | Herramientas de escaneo y ataque | SSH:2222, Burp:8081 |
+| **Kali Linux** | 10.10.0.10 | Herramientas de escaneo y ataque | SSH:2222 |
 | **Metasploitable** | 10.10.0.20 | Sistema Linux vulnerable | SSH:2220, Web:8050, SMB:8082 |
-| **DVWA** | 10.10.0.30 | Aplicación web vulnerable | HTTP:8180, MySQL:8330 |
-| **Windows Target** | 10.10.0.40 | Simulador Windows | RDP:8149, SMB:8445 |
-| **Nessus** | 10.10.0.100 | Escáner de vulnerabilidades | Web UI:8834 (Simulador) |
-| **Elasticsearch** | 10.10.0.50 | Motor de búsqueda | API:9200 |
-| **Kibana** | 10.10.0.60 | Visualización de datos | Web UI:5601 |
+| **DVWA** | 10.10.0.21 | Aplicación web vulnerable | HTTP:8180, MySQL:8330 |
+| **Windows Target** | 10.10.0.30 | Simulador Windows | RDP:8149, SMB:8445 |
+| **Nessus** | 10.10.0.100 | Escáner de vulnerabilidades | Web UI:8834 |
+| **Elasticsearch** | 10.10.0.40 | Motor de búsqueda | API:9200 |
+| **Kibana** | 10.10.0.41 | Visualización de datos | Web UI:5601 |
 
 ---
 
-## Opciones de Instalación
+## Opción Docker (Recomendada)
 
-### Opción Docker (Recomendada)
+### Opción 1: Docker (Recomendada)
+- **Ventajas**: Setup rápido, fácil mantenimiento, portabilidad
+- **Tiempo de instalación**: 5-10 minutos
+- **Recursos**: 4GB RAM, 10GB disco
+- **Ideal para**: Estudiantes, demostraciones, entornos limitados
 
-**Ventajas**: Portabilidad, facilidad de uso, aislamiento completo, rápido setup
-
-#### ⚡ Inicio Rápido (5 minutos)
-```bash
-# 1. Iniciar Docker Desktop (IMPORTANTE)
-# 2. Clonar repositorio
-git clone https://github.com/la00429/Laboratorio_Nessus_Nmap_.git
-cd Laboratorio_Nessus_Nmap_
-
-# 3. Construir e iniciar
-docker compose build
-docker compose up -d
-
-# 4. Verificar
-docker compose ps
-docker compose exec kali nmap -sn 10.10.0.0/24
-```
-
-#### Prerrequisitos
+### Prerrequisitos
 - Docker Desktop o Docker Engine
 - Docker Compose v3.8+
 - 4GB+ RAM, 10GB+ espacio en disco
-- Python 3.7+ (para scripts auxiliares)
 
-#### Instalación Express
+### Instalación Paso a Paso
 
-**PASO A PASO DETALLADO (Probado en Windows 10/11):**
-
+#### Paso 1: Clonar Repositorio
 ```bash
-# 1. Clonar repositorio
 git clone https://github.com/la00429/Laboratorio_Nessus_Nmap_.git
 cd Laboratorio_Nessus_Nmap_
+```
 
-# 2. IMPORTANTE: Iniciar Docker Desktop primero
-# - Abrir Docker Desktop desde el menú de inicio
-# - Esperar a que se inicie completamente (ícono en bandeja del sistema)
-# - Verificar que esté ejecutándose: docker version
+#### Paso 2: Iniciar Docker Desktop
+- Abrir Docker Desktop desde el menú de inicio
+- Esperar a que se inicie completamente (ícono en bandeja del sistema)
+- Verificar que esté ejecutándose: `docker version`
 
-# 3. Configurar automáticamente (Windows)
-bash setup.sh
-# Si falla, continuar con los pasos manuales
-
-# 4. Construir imágenes Docker
+#### Paso 3: Construir Imágenes Docker
+```bash
+# Construir todas las imágenes
 docker compose build
+
 # NOTA: Usar "docker compose" (sin guión) en versiones recientes
-
-# 5. Iniciar laboratorio
-docker compose up -d
-
-# 6. Verificar estado
-docker compose ps
-
-# 7. Probar conectividad
-docker compose exec kali nmap -sn 10.10.0.0/24
 ```
 
-**SOLUCIÓN A PROBLEMAS COMUNES:**
-
-**Problema 1: "docker-compose command not found"**
+#### Paso 4: Iniciar Laboratorio
 ```bash
-# Solución: Usar docker compose (sin guión)
-docker compose build
+# Iniciar todos los contenedores
 docker compose up -d
-```
 
-**Problema 2: "Docker Desktop not running"**
-```bash
 # Verificar estado
-docker version
-# Si falla, iniciar Docker Desktop manualmente
+docker compose ps
 ```
 
-**Problema 3: "WSL2 integration required"**
-- Abrir Docker Desktop
-- Ir a Settings > Resources > WSL Integration
-- Habilitar integración con WSL2
-- Reiniciar Docker Desktop
-
-#### Verificación Rápida
+#### Paso 5: Verificar Conectividad
 ```bash
-# 1. Verificar que todos los contenedores estén ejecutándose
-docker compose ps
-
-# 2. Probar conectividad de red
+# Probar conectividad de red
 docker compose exec kali nmap -sn 10.10.0.0/24
 
-# 3. Verificar que se detecten todos los hosts (debe mostrar 8 hosts)
-# Deberías ver: kali-lab, metasploitable-lab, dvwa-lab, windows-target-lab, 
-# elasticsearch-lab, kibana-lab, nessus-lab, y el gateway
+# Deberías ver todos los hosts del laboratorio
 ```
 
-#### Acceso Inmediato
-- **Kali Linux**: `ssh root@localhost -p 2222` (password: kali123)
-- **Nessus**: https://localhost:8834 (admin/admin123) - **Simulador funcional**
-- **DVWA**: http://localhost:8180 (admin/password)
-- **Metasploitable**: `ssh msfadmin@localhost -p 2220` (password: msfadmin)
-- **Kibana**: http://localhost:5601 (ELK Stack para análisis)
+### Comandos de Gestión Docker
 
-#### Comandos Útiles Docker
-
-**Para Windows (usar docker compose sin guión):**
 ```bash
-# Gestión del laboratorio
-docker compose up -d        # Iniciar todo
-docker compose down         # Detener todo
-docker compose restart      # Reiniciar
-docker compose ps           # Ver estado
-docker compose logs -f      # Ver logs en tiempo real
+# Ver estado de contenedores
+docker compose ps
 
-# Acceso a contenedores
-docker compose exec kali bash      # Acceder a Kali
-docker compose exec nessus bash    # Acceder a Nessus
-docker compose exec dvwa bash      # Acceder a DVWA
+# Ver logs en tiempo real
+docker compose logs -f
 
-# Herramientas y pruebas
-docker compose exec kali nmap -sn 10.10.0.0/24  # Escaneo básico
-docker compose exec kali nmap -sS -sV 10.10.0.20  # Escaneo detallado
+# Reiniciar todo
+docker compose restart
 
-# Limpieza completa
-docker compose down -v              # Detener y eliminar volúmenes
-docker system prune -f              # Limpiar sistema Docker
-docker compose build --no-cache     # Reconstruir sin caché
+# Detener todo
+docker compose down
+
+# Iniciar todo
+docker compose up -d
 ```
 
-**Comandos Make (si están disponibles):**
-```bash
-# Gestión del laboratorio
-make start          # Iniciar todo
-make stop           # Detener todo
-make restart        # Reiniciar
-make status         # Ver estado
-make logs           # Ver logs
-make fix            # Solucionar problemas de imágenes
+### Acceso a Servicios Docker
 
-# Acceso a contenedores
-make shell-kali     # Acceder a Kali
-make shell-nessus   # Acceder a Nessus
-make shell-dvwa     # Acceder a DVWA
-
-# Herramientas
-make nmap-scan      # Escaneo básico
-make test-connectivity # Probar conectividad
-make interactive    # Modo interactivo
-```
-
-#### Documentación Docker
-- **[Guía de Inicio Rápido](docs/QUICKSTART.md)** - Tener el lab funcionando en 10 minutos
-- **[Configuración Completa](docs/DOCKER_SETUP.md)** - Documentación detallada
+| Servicio | URL | Credenciales |
+|----------|-----|--------------|
+| **Kali SSH** | `ssh root@localhost -p 2222` | root/kali123 |
+| **DVWA** | http://localhost:8180 | admin/password |
+| **Nessus** | http://localhost:8834 | admin/admin123 |
+| **Kibana** | http://localhost:5601 | - |
+| **Elasticsearch** | http://localhost:9200 | - |
 
 ---
 
-### Opción Máquinas Virtuales
+## Opción Máquinas Virtuales
 
-**Ventajas**: Control total, simulación real de hardware, flexibilidad avanzada
+### Ventajas
+- Realismo total
+- Flexibilidad máxima
+- Técnicas avanzadas de red
+- Experiencia más realista
 
-#### Prerrequisitos
+### Prerrequisitos
 - VirtualBox, VMware o Proxmox
 - 8GB+ RAM, 50GB+ espacio en disco
 - Snapshot capabilities
 - Red host-only o NAT interna
 
-#### Configuración de VMs
+### Configuración de VMs
 
-##### Kali Linux VM
+#### Kali Linux VM
 - **OS**: Kali Linux 2023.x
 - **RAM**: 2GB mínimo
 - **Disco**: 20GB
 - **IP**: 10.10.0.10
 - **Herramientas**: nmap, python3, metasploit
 
-##### Metasploitable2 VM
+#### Metasploitable2 VM
 - **OS**: Ubuntu 8.04 LTS (Metasploitable2)
 - **RAM**: 1GB
 - **Disco**: 10GB
 - **IP**: 10.10.0.20
 - **Credenciales**: msfadmin/msfadmin, root/password
 
-##### DVWA VM
+#### DVWA VM
 - **OS**: Ubuntu 20.04 LTS
 - **RAM**: 1GB
 - **Disco**: 10GB
 - **IP**: 10.10.0.21
 - **Servicios**: Apache, MySQL, DVWA
 
-##### Windows Target VM
+#### Windows Target VM
 - **OS**: Windows Server 2019/2022
 - **RAM**: 2GB
 - **Disco**: 25GB
 - **IP**: 10.10.0.30
 - **Servicios**: IIS, SMB, RDP
 
-##### Nessus VM
+#### Nessus VM
 - **OS**: Ubuntu 20.04 LTS
 - **RAM**: 2GB
 - **Disco**: 20GB
 - **IP**: 10.10.0.100
 - **Puerto**: 8834
 
-#### Configuración de Red VM
+### Configuración de Red VM
 ```bash
 # VirtualBox - Crear red host-only
 VBoxManage hostonlyif create
@@ -260,10 +188,6 @@ VBoxManage hostonlyif ipconfig vboxnet0 --ip 10.10.0.1 --netmask 255.255.255.0
 # Configurar VMs para usar red host-only
 # Asignar IPs estáticas en cada VM
 ```
-
-#### Documentación VM
-- **[Guía Original](guia.md)** - Instrucciones detalladas para VMs
-- **[Esquema de Red](esquema.dot)** - Diagrama de la arquitectura
 
 ---
 
@@ -295,13 +219,13 @@ sudo nmap -sS -sV -p 22,80,139,445,3306 10.10.0.20 -oN resultados/versiones.txt
 sudo nmap -sU -p 53,67,123 10.10.0.20 -T3 -oN resultados/udp.txt
 
 # 5. Detección de OS
-sudo nmap -O 10.10.0.40 -oN resultados/os_detect.txt
+sudo nmap -O 10.10.0.30 -oN resultados/os_detect.txt
 
 # 6. Escaneo agresivo (combinado)
 sudo nmap -A -T4 10.10.0.20 -oN resultados/agresivo.txt
 
 # 7. Escaneo web específico
-sudo nmap -p80,443 --script=http-* 10.10.0.30 -oA resultados/dvwa_web
+sudo nmap -p80,443 --script=http-* 10.10.0.21 -oA resultados/dvwa_web
 ```
 
 ### Módulo 2: NSE (Nmap Scripting Engine)
@@ -317,16 +241,16 @@ sudo nmap -p80,443 --script=http-* 10.10.0.30 -oA resultados/dvwa_web
 sudo nmap -sS -sV --script=vuln 10.10.0.20 -oN resultados/nse_vuln.txt
 
 # 2. Scripts HTTP específicos
-sudo nmap -p80 --script=http-enum,http-vuln-cve2017-5638 10.10.0.30 -oN resultados/http_nse.txt
+sudo nmap -p80 --script=http-enum,http-vuln-cve2017-5638 10.10.0.21 -oN resultados/http_nse.txt
 
 # 3. Script personalizado
 sudo nmap -sV --script my-banner 10.10.0.20 -oN resultados/my_banner.txt
 
 # 4. Scripts SMB para Windows Target
-sudo nmap -p445 --script=smb-* 10.10.0.40 -oN resultados/smb_nse.txt
+sudo nmap -p445 --script=smb-* 10.10.0.30 -oN resultados/smb_nse.txt
 
 # 5. Scripts de autenticación
-sudo nmap --script=auth 10.10.0.20,10.10.0.30 -oN resultados/auth_nse.txt
+sudo nmap --script=auth 10.10.0.20,10.10.0.21 -oN resultados/auth_nse.txt
 ```
 
 ### Módulo 3: Procesamiento y Automatización (Python)
@@ -343,7 +267,7 @@ python3 scripts/parse_nmap_xml.py resultados/scan.xml --csv reports/summary.csv 
 python3 scripts/docker-lab-helper.py interactive
 
 # Importar a Nessus
-./scripts/import_nmap_to_nessus.sh -x resultados/scan.xml -n "Nmap Discovery" -t "10.10.0.20-30"
+./scripts/import_nmap_to_nessus_improved.sh -x resultados/scan.xml -n "Nmap Discovery" -t "10.10.0.20-30"
 ```
 
 ### Módulo 4: Nessus - Teoría y Práctica
@@ -379,7 +303,7 @@ python3 scripts/docker-lab-helper.py interactive
 nmap -sn 10.10.0.0/24
 
 # Escanear puertos en hosts descubiertos
-nmap -sS -sV 10.10.0.20 10.10.0.30 10.10.0.40
+nmap -sS -sV 10.10.0.20 10.10.0.21 10.10.0.30
 ```
 
 #### 2. Análisis Detallado
@@ -388,10 +312,10 @@ nmap -sS -sV 10.10.0.20 10.10.0.30 10.10.0.40
 nmap -A -sV --script=vuln 10.10.0.20 -oA resultados/metasploitable_full
 
 # Escaneo específico por servicios
-nmap -p80,443 --script=http-* 10.10.0.30 -oA resultados/dvwa_web
+nmap -p80,443 --script=http-* 10.10.0.21 -oA resultados/dvwa_web
 
 # Escaneo Windows Target
-nmap -sS -sV --script=smb-* 10.10.0.40 -oA resultados/windows_target
+nmap -sS -sV --script=smb-* 10.10.0.30 -oA resultados/windows_target
 ```
 
 #### 3. Procesamiento de Resultados
@@ -400,7 +324,7 @@ nmap -sS -sV --script=smb-* 10.10.0.40 -oA resultados/windows_target
 python3 scripts/parse_nmap_xml.py resultados/metasploitable_full.xml --csv reports/metasploitable.csv --json reports/metasploitable.json
 
 # Importar a Nessus para análisis adicional
-./scripts/import_nmap_to_nessus.sh -x resultados/metasploitable_full.xml -n "Metasploitable Analysis"
+./scripts/import_nmap_to_nessus_improved.sh -x resultados/metasploitable_full.xml -n "Metasploitable Analysis"
 ```
 
 #### 4. Análisis con Nessus
@@ -413,7 +337,7 @@ python3 scripts/parse_nmap_xml.py resultados/metasploitable_full.xml --csv repor
 
 ---
 
-## Herramientas y Scripts
+## Scripts y Herramientas
 
 ### Scripts de Automatización
 
@@ -422,15 +346,25 @@ python3 scripts/parse_nmap_xml.py resultados/metasploitable_full.xml --csv repor
 - **Salidas**: CSV, JSON, resumen ejecutivo
 - **Uso**: `python3 scripts/parse_nmap_xml.py scan.xml --csv report.csv --json report.json`
 
-#### `import_nmap_to_nessus.sh`
+#### `import_nmap_to_nessus_improved.sh`
 - **Función**: Prepara importación de resultados Nmap a Nessus
 - **Características**: Extrae hosts, crea targets, genera instrucciones
-- **Uso**: `./scripts/import_nmap_to_nessus.sh -x scan.xml -n "Scan Name"`
+- **Uso**: `./scripts/import_nmap_to_nessus_improved.sh -x scan.xml -n "Scan Name"`
 
-#### `docker-lab-helper.py` (Solo Docker)
-- **Función**: Gestión completa del laboratorio Docker
-- **Características**: Inicio/parada, verificación, escaneos automatizados
-- **Uso**: `python3 scripts/docker-lab-helper.py interactive`
+#### `verify_lab.sh`
+- **Función**: Verificación completa del laboratorio
+- **Características**: Estado de contenedores, conectividad, servicios
+- **Uso**: `./scripts/verify_lab.sh`
+
+#### `fix_nessus_access.sh`
+- **Función**: Solución de problemas de Nessus
+- **Características**: Diagnóstico automático, reinicio, reconstrucción
+- **Uso**: `./scripts/fix_nessus_access.sh --auto-fix`
+
+#### `quick_fix_all.sh`
+- **Función**: Solución automática de todos los problemas
+- **Características**: Limpieza completa, reconstrucción, reinicio
+- **Uso**: `./scripts/quick_fix_all.sh`
 
 ### Scripts NSE Personalizados
 
@@ -453,44 +387,66 @@ python3 scripts/parse_nmap_xml.py resultados/metasploitable_full.xml --csv repor
 
 ---
 
-## Reportes y Análisis
+## Solución de Problemas
 
-### Formato de Reportes
+### Problemas Comunes Docker
 
-#### Resumen Ejecutivo
-```
-Título: [Basic Network Scan - non-credentialed]
-Fecha: 2025-01-15 10:00 UTC-5
-Objetivo: 10.10.0.20-30
-Comando: nmap -sS -sV -oX resultados/scan.xml
-Tiempo ejecución: 00:12:34
-
-Resumen ejecutivo:
-  - Hosts vivos: 3
-  - Puertos abiertos: 45
-  - Hallazgos critical: 2
-  - Hallazgos high: 8
+#### 1. "docker-compose command not found"
+```bash
+# Solución: Usar docker compose (sin guión)
+docker compose build
+docker compose up -d
 ```
 
-#### Tabla de Hallazgos
-| Host | Puerto | Servicio | Plugin/CVE | Severidad | Recomendación |
-|------|--------|----------|------------|-----------|---------------|
-| 10.10.0.20 | 80 | http | CVE-2021-44228 | Critical | Actualizar Apache |
-| 10.10.0.30 | 3306 | mysql | CVE-2020-1472 | High | Cambiar credenciales |
-| 10.10.0.40 | 445 | smb | CVE-2020-1472 | High | Parchear SMB |
+#### 2. "Docker Desktop not running"
+```bash
+# Verificar estado
+docker version
+# Si falla, iniciar Docker Desktop manualmente
+```
 
-### Correlación Nmap ↔ Nessus
+#### 3. "WSL2 integration required"
+- Abrir Docker Desktop
+- Ir a Settings > Resources > WSL Integration
+- Habilitar integración con WSL2
+- Reiniciar Docker Desktop
 
-#### Procedimiento
-1. Ejecutar Nmap discovery (`-oX`) para obtener puertos abiertos
-2. Importar Nmap XML a Nessus o usar CSV del parser
-3. Filtrar findings de Nessus por host/puerto
-4. Priorizar por severidad y contexto
+#### 4. Contenedores reiniciándose
+```bash
+# Ver logs del contenedor problemático
+docker compose logs [nombre-contenedor]
 
-#### Reglas de Priorización
-- `Critical` plugin sobre servicio expuesto → **Prioridad Alta**
-- `High` plugin en servicio con puerto abierto y versión vulnerable → **Prioridad Media-Alta**
-- Falsos positivos confirmados manualmente → **Bajar prioridad**
+# Reconstruir imagen específica
+docker compose build --no-cache [nombre-contenedor]
+```
+
+#### 5. Nessus no accesible
+```bash
+# Diagnosticar problemas de Nessus
+./scripts/fix_nessus_access.sh
+
+# Solución automática
+./scripts/fix_nessus_access.sh --auto-fix
+```
+
+### Problemas Comunes VMs
+1. **Verificar conectividad**: `ping` entre todos los componentes
+2. **Revisar logs**: Logs de VMs
+3. **Verificar recursos**: RAM, CPU, espacio en disco
+4. **Consultar documentación**: Guías específicas por plataforma
+
+### Limpieza Completa
+```bash
+# Docker
+docker compose down -v
+docker system prune -f
+docker compose build --no-cache
+docker compose up -d
+
+# VMs
+# Hacer snapshots antes de cambios importantes
+# Restaurar desde snapshot si es necesario
+```
 
 ---
 
@@ -522,173 +478,36 @@ Resumen ejecutivo:
 
 ---
 
-## Checklist Final
+## Estado del Laboratorio
 
-### Configuración Inicial
-- [ ] Red del laboratorio aislada y configurada
-- [ ] Todas las VMs/contenedores funcionando
-- [ ] Conectividad entre todos los componentes
-- [ ] Credenciales configuradas y documentadas
-- [ ] Snapshots/backups realizados
-
-### Ejercicios Completados
-- [ ] Módulo 1: Nmap básico y reconocimiento
-- [ ] Módulo 2: Scripts NSE y vulnerabilidades
-- [ ] Módulo 3: Procesamiento y automatización
-- [ ] Módulo 4: Nessus y análisis avanzado
-
-### Entregables
-- [ ] Resultados Nmap en múltiples formatos
-- [ ] Scripts NSE personalizados documentados
-- [ ] Scripts Python funcionando y probados
-- [ ] Reportes Nessus exportados
-- [ ] Análisis de correlación Nmap-Nessus
-- [ ] Documentación de hallazgos y recomendaciones
-
-### Limpieza
-- [ ] Datos sensibles eliminados
-- [ ] Credenciales de prueba cambiadas
-- [ ] Logs y resultados archivados
-- [ ] Sistema restaurado a estado inicial
-
----
-
-## Soporte y Recursos
-
-### Documentación Adicional
-- **[Comparación Docker vs VMs](docs/COMPARISON.md)** - Guía para elegir la mejor opción
-- **[Guía Docker](docs/DOCKER_SETUP.md)** - Configuración completa con contenedores
-- **[Inicio Rápido](docs/QUICKSTART.md)** - Setup en 10 minutos
-- **[Guía Original](guia.md)** - Instrucciones detalladas para VMs
-
-### Comandos de Ayuda
-```bash
-# Docker
-make help                    # Ver todos los comandos
-python3 scripts/docker-lab-helper.py interactive  # Modo interactivo
-
-# VMs
-# Consultar guia.md para comandos específicos
-```
-
-### Resolución de Problemas
-
-#### Problemas Comunes Docker
-
-**PROBLEMAS ESPECÍFICOS DE WINDOWS:**
-
-1. **"docker-compose command not found"**:
-   ```bash
-   # Solución: Usar docker compose (sin guión)
-   docker compose build
-   docker compose up -d
-   ```
-
-2. **"Docker Desktop not running"**:
-   ```bash
-   # Verificar estado
-   docker version
-   # Si falla, iniciar Docker Desktop manualmente desde el menú de inicio
-   ```
-
-3. **"WSL2 integration required"**:
-   - Abrir Docker Desktop
-   - Ir a Settings > Resources > WSL Integration
-   - Habilitar integración con WSL2
-   - Reiniciar Docker Desktop
-
-4. **"Unable to start container process"**:
-   ```bash
-   # Verificar que Docker Desktop esté ejecutándose
-   docker version
-   # Reiniciar Docker Desktop si es necesario
-   ```
-
-**PROBLEMAS GENERALES:**
-
-1. **Contenedores reiniciándose**:
-   ```bash
-   # Ver logs del contenedor problemático
-   docker compose logs [nombre-contenedor]
-   
-   # Reconstruir imagen específica
-   docker compose build --no-cache [nombre-contenedor]
-   ```
-
-2. **Problemas de imágenes**:
-   ```bash
-   # Ejecutar script de reparación
-   make fix
-   # o
-   ./fix-docker.sh
-   ```
-
-3. **Puertos ocupados**:
-   ```bash
-   # Verificar puertos en uso (Windows)
-   netstat -an | findstr :2222
-   
-   # Cambiar puertos en docker-compose.yml si es necesario
-   ```
-
-4. **Limpieza completa**:
-   ```bash
-   # Detener todo y limpiar
-   docker compose down -v
-   docker system prune -f
-   docker compose build --no-cache
-   docker compose up -d
-   ```
-
-#### Problemas Comunes VMs
-1. **Verificar conectividad**: `ping` entre todos los componentes
-2. **Revisar logs**: Docker logs o logs de VMs
-3. **Verificar recursos**: RAM, CPU, espacio en disco
-4. **Consultar documentación**: Guías específicas por plataforma
-
-#### Mejoras Implementadas
-- **DVWA**: Corregido comando Apache para Ubuntu 20.04
-- **Metasploitable**: Agregado loop de supervisión de servicios
-- **Windows Target**: Optimizado entrypoint con supervisión
-- **Nessus**: Simulador funcional para propósitos educativos
-- **Kali**: Configuración SSH mejorada y librerías Python actualizadas
-
----
-
-## Licencia
-
-Este laboratorio está diseñado únicamente para fines educativos. Ver archivo `LICENSE` para más detalles.
-
----
-
----
-
-## Estado Actual del Laboratorio
-
-### ✅ **Laboratorio Completamente Funcional**
+### Completamente Funcional
 
 | Componente | Estado | Última Actualización |
 |------------|--------|---------------------|
-| **Docker Compose** | ✅ Funcionando | Enero 2025 |
-| **Todos los Contenedores** | ✅ Estables | Enero 2025 |
-| **Correcciones Aplicadas** | ✅ Completadas | Enero 2025 |
-| **Documentación** | ✅ Actualizada | Enero 2025 |
+| **Docker Compose** | Funcionando | Enero 2025 |
+| **Todos los Contenedores** | Estables | Enero 2025 |
+| **Scripts de Utilidad** | Actualizados | Enero 2025 |
+| **Documentación** | Actualizada | Enero 2025 |
 
-### 🔧 **Correcciones Implementadas**
-- ✅ DVWA: Apache corregido para Ubuntu 20.04
-- ✅ Metasploitable: Supervisión de servicios mejorada
-- ✅ Windows Target: Entrypoint optimizado
-- ✅ Nessus: Simulador funcional implementado
-- ✅ Kali: SSH y Python configurados correctamente
-- ✅ Puertos: Conflictos resueltos (8081, 8082)
+### Listo para Usar
 
-### 🚀 **Listo para Usar**
-El laboratorio está completamente operativo y listo para ejercicios de seguridad. Todos los contenedores están funcionando correctamente sin reinicios.
+El laboratorio está completamente operativo y listo para ejercicios de seguridad. Todos los componentes están funcionando correctamente.
+
+## Documentación Adicional
+
+- **[Guía Completa](guia.md)** - Instrucciones detalladas para el laboratorio
+- **[Inicio Rápido Docker](docs/QUICKSTART.md)** - Setup en 10 minutos
+- **[Configuración Docker](docs/DOCKER_SETUP.md)** - Documentación detallada
+
+## Soporte
+
+Para problemas o dudas:
+1. Consultar la [Guía Completa](guia.md)
+2. Revisar la sección de solución de problemas
+3. Verificar el estado del laboratorio con los scripts incluidos
 
 ---
 
-**¡Happy Hacking!** 🎉
-
-> Laboratorio creado para Redes de Datos 
-> Versión Docker y VM - 2025  
-> **Estado**: ✅ Completamente Funcional
+**Laboratorio creado para Redes de Datos**  
+**Versión Docker y VM - 2025**  
+**Estado**: Completamente Funcional

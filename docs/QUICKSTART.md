@@ -20,11 +20,8 @@ df -h
 git clone https://github.com/la00429/Laboratorio_Nessus_Nmap_.git
 cd Laboratorio_Nessus_Nmap_
 
-# Copiar archivo de configuración
-cp env.example .env
-
-# Editar si es necesario (opcional)
-nano .env
+# El archivo .env se crea automáticamente si no existe
+# No es necesario configurarlo manualmente
 ```
 
 ### 4. Iniciar Laboratorio
@@ -129,8 +126,7 @@ Si ves el error "invalid reference format" al ejecutar `docker-compose up -d`:
 
 ```bash
 # Solución rápida
-chmod +x fix-docker.sh
-./fix-docker.sh
+./scripts/quick_fix_all.sh
 ```
 
 ### Contenedores no inician

@@ -19,10 +19,10 @@ Esta guía te ayudará a configurar y ejecutar el laboratorio de escaneo de vuln
    cd Laboratorio_Nessus_Nmap_
    ```
 
-2. **Configurar variables de entorno**
+2. **Variables de entorno**
    ```bash
-   cp env.example .env
-   # Editar .env según tus necesidades
+   # El archivo .env se crea automáticamente si no existe
+   # No es necesario configurarlo manualmente
    ```
 
 3. **Iniciar el laboratorio**
@@ -138,7 +138,6 @@ python3 scripts/parse_nmap_xml.py resultados/scan.xml --csv reports/summary.csv 
 ```
 lab-nmap-nessus-docker/
 ├── docker-compose.yml          # Configuración principal
-├── env.example                 # Variables de entorno
 ├── containers/                 # Dockerfiles y configuraciones
 │   ├── kali/
 │   ├── nessus/
