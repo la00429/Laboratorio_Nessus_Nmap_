@@ -15,29 +15,80 @@
 
 # 2. Requisitos y arquitectura recomendada
 
-## Hardware / VMs
+## Opción A: Docker (Recomendada - Más Rápido)
 
-* Host: PC o servidor con VirtualBox / VMware / Proxmox.
-* Red: NAT interna o host-only (aislada).
-* VMs sugeridas (direcciones ejemplo en subnet 10.10.0.0/24):
+**Ventajas:**
+* Setup en 5-10 minutos
+* Fácil mantenimiento
+* Portabilidad total
+* Menor consumo de recursos
 
+**Requisitos:**
+* Docker y Docker Compose instalados
+* 4GB+ RAM, 10GB+ disco
+* **Nessus `.deb`** descargado ANTES de empezar
+
+**Arquitectura Docker:**
+* Subnet: `10.10.0.0/24`
+* Componentes automáticos:
+  * Attacker: **Kali Linux** — 10.10.0.10
+  * Vulnerable 1: **Metasploitable** — 10.10.0.20
+  * Vulnerable 2: **DVWA** — 10.10.0.21
+  * Target Windows: **Simulador Windows** — 10.10.0.30
+  * Nessus: **Nessus Scanner** — 10.10.0.100
+  * Elasticsearch — 10.10.0.40
+  * Kibana — 10.10.0.41
+
+**Inicio rápido:**
+```bash
+# 1. Descargar Nessus .deb PRIMERO
+# 2. Clonar repositorio y entrar
+git clone <repo>
+cd Laboratorio_Nessus_Nmap_
+
+# 3. Iniciar todo
+docker-compose up -d
+
+# 4. Instalar Nessus automáticamente
+.\scripts\setup_nessus.ps1
+```
+
+**Ver README.MD para instrucciones completas de Docker**
+
+---
+
+## Opción B: Máquinas Virtuales (Tradicional)
+
+**Ventajas:**
+* Realismo total
+* Flexibilidad máxima
+* Técnicas avanzadas de red
+
+**Requisitos:**
+* Host: PC o servidor con VirtualBox / VMware / Proxmox
+* 8GB+ RAM, 50GB+ disco
+* Red: NAT interna o host-only (aislada)
+
+**VMs sugeridas (direcciones ejemplo en subnet 10.10.0.0/24):**
   * Attacker: **Kali Linux** — 10.10.0.10
   * Vulnerable 1: **Metasploitable2** — 10.10.0.20
   * Vulnerable 2: **OWASP BWA** o **DVWA** — 10.10.0.21
-  * Target Windows: **Windows Server evaluation** — 10.10.0.30 (para escaneos credentialed)
-  * Nessus Server: **Nessus** VM — 10.10.0.100 (puede convivir en la misma red)
+* Target Windows: **Windows Server evaluation** — 10.10.0.30
+* Nessus Server: **Nessus** VM — 10.10.0.100
 
-## Red
+**Red:**
+* Subnet: `10.10.0.0/24`
+* Gateway: host si se requiere
+* Aislar del resto de la red de producción
 
-* Subnet: `10.10.0.0/24`.
-* Gateway: host si se requiere.
-* Aislar el laboratorio del resto de la red de producción.
+**Consejos operativos:**
+* Hacer snapshots antes de cambios importantes
+* No conectar a redes de producción
+* Usar imágenes educativas (Metasploitable, VulnHub, DVWA)
 
-## Consejos operativos
+---
 
-* Hacer snapshots antes de cambios importantes.
-* No conectar el laboratorio a redes de producción ni escanear sistemas no autorizados.
-* Usar imágenes educativas (Metasploitable, VulnHub, DVWA).
+>  **Nota**: El resto de esta guía usa comandos genéricos que funcionan en ambas opciones (Docker o VMs)
 
 ---
 
@@ -297,44 +348,373 @@ Instalar: `pip install python-nmap`
 * **Non-credentialed scans**: visión externa, detección de servicios visibles.
 * CVSS: usar para priorizar; considerar contexto y falsos positivos.
 
-## Instalación rápida (resumen)
+## Instalación de Nessus
 
-1. Instalar Nessus en VM Linux (seguir guía oficial de Tenable).
-2. Inicializar y registrar (Essentials/Professional según licencia).
-3. Acceder: `https://10.10.0.100:8834`.
+###  Para Docker (Opción A - Recomendada)
+
+ **ANTES DE EMPEZAR**: Descarga Nessus `.deb` desde https://www.tenable.com/downloads/nessus
+- Selecciona: **Debian 10 (64-bit)** o **Ubuntu (64-bit)**
+
+#### Instalación Automática (1 comando):
+```powershell
+# Ejecutar script de instalación
+.\scripts\setup_nessus.ps1
+```
+
+#### Pasos manuales (alternativa):
+```bash
+# 1. Copiar archivo al contenedor
+docker cp Nessus-10.x.x-debian10_amd64.deb nessus-lab:/tmp/Nessus.deb
+
+# 2. Instalar
+docker exec nessus-lab dpkg -i /tmp/Nessus.deb
+
+# 3. Iniciar
+docker exec nessus-lab /opt/nessus/sbin/nessusd
+```
+
+#### Configuración Inicial:
+1. Acceder: `https://localhost:8834` (en el host) o `https://10.10.0.100:8834` (desde contenedores)
+2. Código gratis: https://www.tenable.com/products/nessus/nessus-essentials
+3. Usuario: `admin` / Password: `admin123`
+4. Esperar descarga de plugins (10-30 minutos)
+
+**Guía detallada Docker**: `docs/INSTALACION_NESSUS_DOCKER.md`
+
+---
+
+### Para Máquinas Virtuales (Opción B)
+
+**Instalación en VM Linux:**
+1. Descargar Nessus desde: https://www.tenable.com/downloads/nessus
+2. Instalar según distribución:
+   ```bash
+   # Debian/Ubuntu
+   sudo dpkg -i Nessus-*.deb
+   
+   # Red Hat/CentOS
+   sudo rpm -ivh Nessus-*.rpm
+   ```
+3. Iniciar servicio:
+   ```bash
+   sudo systemctl start nessusd
+   ```
+4. Acceder: `https://IP-DE-TU-VM:8834`
+5. Configurar con código de Tenable Essentials (gratis)
+
+---
+
+> **Nota**: El resto de ejercicios funcionan igual en Docker o VMs
 
 ## Ejercicios prácticos
 
-1. **Escaneo básico non-credentialed**
+### Ejercicio 1: Escaneo básico non-credentialed
 
-   * Template: *Basic Network Scan*
-   * Objetivos: `10.10.0.20-30`
-   * Ejecutar y exportar PDF/HTML.
+**Objetivo:** Identificar servicios y vulnerabilidades visibles externamente.
 
-2. **Escaneo credentialed (Linux)**
+**Pasos:**
+1. Navegar a **Scans** → **New Scan**
+2. Seleccionar template: **Basic Network Scan**
+3. Configurar escaneo:
+   - Name: `Lab-Basic-Scan`
+   - Description: `Escaneo non-credentialed de objetivos del laboratorio`
+   - Targets: `10.10.0.20,10.10.0.21,10.10.0.30`
+4. Ejecutar: **Launch**
+5. Esperar finalización (5-15 minutos dependiendo de la red)
+6. Exportar resultados:
+   - Formato: **PDF** (para documentación)
+   - Formato: **HTML** (para análisis detallado)
+   - Formato: **CSV** (para procesamiento)
 
-   * Configurar Credentials → SSH (username/key)
-   * Ejecutar, comparar findings.
+**Resultados esperados:**
+- Puertos abiertos en cada objetivo
+- Versiones de servicios detectadas
+- Vulnerabilidades de severidad Critical/High/Medium/Low
+- Total de hallazgos por host
 
-3. **Ajuste performance / exclusiones**
+---
 
-   * Max simultaneous hosts, Scan timeout para evitar DoS.
+### Ejercicio 2: Escaneo credentialed (Linux)
 
-## Analizar reporte
+**Objetivo:** Obtener información interna del sistema usando credenciales SSH.
 
-* Revisar: `plugin description`, `solution`, `see also`, `cvss`, `plugin id`.
-* Priorizar por `Critical` y `High`, evaluar exploitability y contexto.
+**Pasos:**
+1. Crear nueva política o editar escaneo anterior
+2. Ir a **Credentials** → **SSH**
+3. Configurar credenciales para 10.10.0.20 (Metasploitable):
+   - Username: `msfadmin`
+   - Password: `msfadmin`
+   - Authentication method: `Password`
+   - Elevate privileges with: `sudo` (opcional)
+4. Configurar credenciales para 10.10.0.21 (DVWA):
+   - Username: `root`
+   - Password: `password`
+   - Authentication method: `Password`
+5. Guardar y ejecutar: **Launch**
+6. Comparar resultados con escaneo non-credentialed
 
-## Integración con Nmap
+**Análisis comparativo:**
+- Número de vulnerabilidades detectadas (non-cred vs cred)
+- Plugins adicionales ejecutados con credenciales
+- Información de sistema operativo obtenida
+- Parches faltantes identificados
+- Configuraciones inseguras encontradas
 
-* Importar XML de Nmap a Nessus para crear targets o para orientar escaneo credentialed.
-* Flujo recomendado: Nmap discovery (rápido) → importar XML → escaneo credentialed en Nessus.
+---
 
-## Entregable Módulo 4
+### Ejercicio 3: Análisis de plugins y priorización
 
-* Políticas Nessus configuradas y exportadas.
-* Exportes PDF/HTML de escaneos credentialed y non-credentialed.
-* Análisis de plugins (mínimo 10) con recomendaciones.
+**Objetivo:** Interpretar resultados y priorizar remediaciones.
+
+**Procedimiento:**
+1. Abrir reporte del escaneo credentialed
+2. Filtrar por severidad: **Critical** y **High**
+3. Para cada vulnerabilidad, documentar:
+
+**Tabla de análisis:**
+```
+| Plugin ID | Nombre | Severidad | CVSS | Host | Puerto | Servicio | Explotable | Prioridad |
+|-----------|--------|-----------|------|------|--------|----------|------------|-----------|
+| 12345     | SSH Weak Encryption | High | 7.5 | 10.10.0.20 | 22 | SSH | Sí | Alta |
+```
+
+**Campos a analizar por plugin:**
+- **Plugin Description**: Descripción técnica de la vulnerabilidad
+- **Solution**: Pasos de remediación recomendados
+- **See Also**: Referencias (CVE, advisories, patches)
+- **CVSS Score**: Puntuación de severidad
+- **CVSS Vector**: Vector de ataque (AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H)
+- **Exploitability**: Existe exploit público (Metasploit, ExploitDB)
+- **Plugin Output**: Evidencia específica encontrada en el sistema
+
+**Priorización:**
+- **Prioridad 1 (Crítica)**: CVSS > 9.0, servicio expuesto, exploit disponible
+- **Prioridad 2 (Alta)**: CVSS 7.0-8.9, servicio expuesto, información sensible
+- **Prioridad 3 (Media)**: CVSS 4.0-6.9, servicios internos, falta de hardening
+- **Prioridad 4 (Baja)**: CVSS < 4.0, informacional, falsos positivos potenciales
+
+---
+
+### Ejercicio 4: Configuración de políticas personalizadas
+
+**Objetivo:** Crear política optimizada para el laboratorio.
+
+**Pasos:**
+1. Ir a **Policies** → **New Policy**
+2. Seleccionar: **Advanced Scan**
+3. Configurar en **Basic**:
+   - Name: `Lab-Custom-Policy`
+   - Description: `Política personalizada para entorno de laboratorio`
+   
+4. Configurar en **Discovery**:
+   - Scan Type: `Full`
+   - Port Scanning: `Default` o `All ports` (1-65535)
+   - Port scan range: `1-65535`
+   
+5. Configurar en **Assessment**:
+   - Web Applications: `Enabled` (para DVWA)
+   - Brute Force: `Enabled` (cuidado en producción)
+   - Denial of Service: `Disabled` (evitar caídas)
+   
+6. Configurar en **Report**:
+   - Output: `Verbose`
+   - Process info: `Enabled`
+   - Show missing patches: `Enabled`
+   
+7. Configurar en **Performance**:
+   - Max simultaneous hosts: `3` (ajustar según recursos)
+   - Max checks per host: `5`
+   - Network timeout: `5` seconds
+   - Scan time limit: `Unlimited`
+   
+8. Guardar política y ejecutar escaneo
+
+**Resultados esperados:**
+- Mayor cobertura de vulnerabilidades
+- Información detallada de configuración del sistema
+- Recomendaciones específicas de hardening
+
+---
+
+### Ejercicio 5: Integración Nmap + Nessus
+
+**Objetivo:** Correlacionar hallazgos de Nmap con Nessus.
+
+**Fase 1: Escaneo con Nmap**
+```bash
+# Ejecutar escaneo completo con Nmap
+nmap -sS -sV -p- 10.10.0.20,10.10.0.21,10.10.0.30 \
+  -oX resultados/nmap_full_scan.xml \
+  -oN resultados/nmap_full_scan.txt
+
+# Ejecutar scripts de vulnerabilidad
+nmap -sS -sV --script=vuln 10.10.0.20,10.10.0.21,10.10.0.30 \
+  -oX resultados/nmap_vuln_scan.xml
+```
+
+**Fase 2: Importar a Nessus (opcional)**
+- En Nessus: **Scans** → **Import Scan**
+- Seleccionar archivo XML de Nmap
+- Revisar targets detectados
+
+**Fase 3: Correlación manual**
+
+Crear tabla de correlación:
+```
+| Host | Puerto | Servicio | Versión Nmap | Vuln Nmap | Plugin Nessus | Severidad | Correlación |
+|------|--------|----------|--------------|-----------|---------------|-----------|-------------|
+| 10.10.0.20 | 22 | SSH | OpenSSH 6.6.1p1 | Weak encryption | 10881 | High | Coincide |
+| 10.10.0.20 | 80 | HTTP | Apache 2.4.7 | Version EOL | 11422 | Medium | Coincide |
+```
+
+**Análisis:**
+- Vulnerabilidades detectadas por ambas herramientas
+- Vulnerabilidades únicas de Nessus (plugins específicos)
+- Falsos positivos identificados
+- Versiones confirmadas vs versiones reportadas
+
+---
+
+### Ejercicio 6: Escaneo de aplicaciones web (DVWA)
+
+**Objetivo:** Identificar vulnerabilidades específicas de aplicaciones web.
+
+**Pasos:**
+1. Crear escaneo específico para 10.10.0.21 (DVWA)
+2. Template: **Web Application Tests**
+3. Configurar:
+   - Target: `10.10.0.21`
+   - Port: `80`
+   - Enable: **Comprehensive tests**
+   
+4. En **Assessment** → **Web Applications**:
+   - Test embedded web servers: `Enabled`
+   - Maximum run time: `4 hours`
+   - Follow HTTP redirects: `Enabled`
+   - Test for SQL injection: `Enabled`
+   - Test for XSS: `Enabled`
+   - Test for CSRF: `Enabled`
+   
+5. Ejecutar y analizar:
+   - Vulnerabilidades OWASP Top 10
+   - Configuraciones inseguras de PHP/Apache
+   - Credenciales por defecto
+   - Archivos sensibles expuestos
+
+**Vulnerabilidades esperadas en DVWA:**
+- SQL Injection
+- Cross-Site Scripting (XSS)
+- CSRF
+- File Inclusion
+- Command Injection
+- Insecure CAPTCHA
+- Weak Session Handling
+
+---
+
+## Análisis y documentación de resultados
+
+### Estructura del informe técnico
+
+**1. Resumen ejecutivo**
+- Total de hosts escaneados
+- Total de vulnerabilidades por severidad
+- Riesgo general del entorno
+- Recomendaciones prioritarias
+
+**2. Metodología**
+- Herramientas utilizadas (Nessus version, plugins version)
+- Tipo de escaneos realizados
+- Credenciales utilizadas
+- Limitaciones del escaneo
+
+**3. Hallazgos por host**
+
+Para cada host documentar:
+```
+Host: 10.10.0.20 (Metasploitable)
+Sistema Operativo: Linux Ubuntu 8.04
+Criticidad general: ALTA
+
+Vulnerabilidades Críticas: 12
+- Plugin 12345: Remote Code Execution en vsftpd
+  - CVSS: 10.0
+  - Solución: Actualizar a versión 3.0.3 o superior
+  - Prioridad: INMEDIATA
+
+Vulnerabilidades Altas: 28
+- Plugin 23456: SSH Weak Encryption
+  - CVSS: 7.5
+  - Solución: Configurar algoritmos seguros en sshd_config
+  - Prioridad: ALTA
+
+[Continuar con todas las vulnerabilidades...]
+```
+
+**4. Matriz de riesgos**
+```
+| Severidad | Cantidad | % Total | Tendencia |
+|-----------|----------|---------|-----------|
+| Critical  | 15       | 5%      | Estable   |
+| High      | 85       | 28%     | Aumento   |
+| Medium    | 150      | 50%     | Estable   |
+| Low       | 50       | 17%     | Reducción |
+```
+
+**5. Plan de remediación**
+
+Priorizar por:
+- Impacto en confidencialidad/integridad/disponibilidad
+- Facilidad de explotación
+- Exposición del servicio (interno vs externo)
+- Criticidad del activo
+
+**6. Anexos**
+- Reportes completos PDF de Nessus
+- Salidas XML de Nmap
+- Screenshots de vulnerabilidades críticas
+- Scripts utilizados para automatización
+
+---
+
+## Entregables del Módulo 4
+
+**Archivos requeridos:**
+
+1. **Políticas Nessus**
+   - Política non-credentialed exportada (.nessus)
+   - Política credentialed exportada (.nessus)
+   - Política personalizada exportada (.nessus)
+
+2. **Reportes de escaneos**
+   - Escaneo básico: PDF + HTML + CSV
+   - Escaneo credentialed: PDF + HTML + CSV
+   - Escaneo de aplicación web: PDF + HTML
+
+3. **Análisis técnico**
+   - Documento con análisis de mínimo 10 plugins:
+     * Plugin ID y nombre
+     * Descripción técnica
+     * Severidad y CVSS
+     * Evidencia encontrada
+     * Solución recomendada
+     * Referencias (CVE, patches)
+   
+4. **Correlación Nmap-Nessus**
+   - Tabla de correlación (formato CSV o Excel)
+   - Análisis de coincidencias y diferencias
+   - Falsos positivos identificados
+
+5. **Plan de remediación**
+   - Vulnerabilidades priorizadas
+   - Timeframe de implementación
+   - Recursos necesarios
+   - Métricas de éxito
+
+6. **Scripts y automatización**
+   - Scripts utilizados para parsear resultados
+   - Comandos de integración documentados
+   - Procedimientos reproducibles
 
 ---
 

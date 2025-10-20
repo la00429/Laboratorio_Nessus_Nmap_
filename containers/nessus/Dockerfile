@@ -1,115 +1,139 @@
 FROM ubuntu:22.04
 
-# Metadatos
-LABEL maintainer="Laboratorio Nmap+Nessus"
-LABEL description="Nessus Vulnerability Scanner Simulator"
-
-# Variables de entorno
 ENV DEBIAN_FRONTEND=noninteractive
-ENV NESSUS_ADMIN_PASSWORD=admin123
 ENV NESSUS_HOME=/opt/nessus
+ENV PATH="${PATH}:/opt/nessus/bin:/opt/nessus/sbin"
 
-# Actualizar sistema e instalar dependencias
+# Instalar dependencias
 RUN apt-get update && apt-get install -y \
-    apache2 \
-    curl \
-    wget \
+    wget curl ca-certificates \
+    iproute2 net-tools iputils-ping \
+    vim nano procps \
     && rm -rf /var/lib/apt/lists/*
 
-# Crear directorios necesarios para Apache CON PERMISOS
-RUN mkdir -p /var/run/apache2 /var/lock/apache2 && \
-    chown -R www-data:www-data /var/run/apache2 /var/lock/apache2 && \
-    chmod -R 755 /var/run/apache2 /var/lock/apache2
+# Crear directorios
+RUN mkdir -p /opt/nessus/sbin /opt/nessus/var/nessus \
+    /opt/nessus/lib/nessus/plugins /opt/nessus/imports
 
-# Crear directorios de Nessus
-RUN mkdir -p /opt/nessus/sbin && \
-    mkdir -p /opt/nessus/www && \
-    mkdir -p /opt/nessus/var && \
-    mkdir -p /opt/nessus/plugins && \
-    mkdir -p /opt/nessus/imports
+# Descargar e instalar Nessus automáticamente
+# Usando una versión específica que permite descarga directa
+RUN cd /tmp && \
+    echo "Descargando Nessus..." && \
+    wget --quiet --no-check-certificate \
+    "https://www.tenable.com/downloads/api/v2/pages/nessus/files/Nessus-10.8.3-ubuntu1404_amd64.deb" \
+    -O Nessus.deb 2>/dev/null || \
+    wget --quiet --no-check-certificate \
+    "https://www.tenable.com/downloads/api/v1/public/pages/nessus/downloads/23476/download?i_agree_to_tenable_license_agreement=true" \
+    -O Nessus.deb 2>/dev/null || \
+    echo "Descarga automática no disponible - instalación manual requerida" && \
+    if [ -f Nessus.deb ] && [ -s Nessus.deb ]; then \
+        echo "Instalando Nessus..." && \
+        dpkg -i Nessus.deb && \
+        apt-get install -f -y && \
+        rm Nessus.deb && \
+        echo "Nessus instalado correctamente"; \
+    else \
+        echo "No se pudo descargar Nessus automáticamente" && \
+        rm -f Nessus.deb; \
+    fi
 
-# Crear simulador de Nessus
-RUN echo '#!/bin/bash' > /opt/nessus/sbin/nessusd && \
-    echo 'echo "=== Nessus Simulator ==="' >> /opt/nessus/sbin/nessusd && \
-    echo 'echo "Simulador de Nessus para laboratorio educativo"' >> /opt/nessus/sbin/nessusd && \
-    echo 'echo "Web UI disponible en: https://localhost:8834"' >> /opt/nessus/sbin/nessusd && \
-    echo 'echo "Usuario: admin"' >> /opt/nessus/sbin/nessusd && \
-    echo 'echo "Password: admin123"' >> /opt/nessus/sbin/nessusd && \
-    echo 'echo "Servidor iniciado en modo simulación..."' >> /opt/nessus/sbin/nessusd && \
-    echo 'while true; do sleep 30; done' >> /opt/nessus/sbin/nessusd && \
-    chmod +x /opt/nessus/sbin/nessusd
-
-RUN echo '#!/bin/bash' > /opt/nessus/sbin/nessuscli && \
-    echo 'echo "Nessus CLI Simulator - Comando: $@"' >> /opt/nessus/sbin/nessuscli && \
-    echo 'echo "Simulador ejecutando comando: $@"' >> /opt/nessus/sbin/nessuscli && \
-    chmod +x /opt/nessus/sbin/nessuscli
-
-# Crear página web simulada de Nessus
-RUN echo '<html><head><title>Nessus Simulator</title></head>' > /opt/nessus/www/index.html && \
-    echo '<body style="font-family: Arial, sans-serif; margin: 50px; background-color: #f0f0f0;">' >> /opt/nessus/www/index.html && \
-    echo '<div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">' >> /opt/nessus/www/index.html && \
-    echo '<h1 style="color: #2c5aa0;">Nessus Vulnerability Scanner</h1>' >> /opt/nessus/www/index.html && \
-    echo '<h2 style="color: #666;">Simulador para Laboratorio Educativo</h2>' >> /opt/nessus/www/index.html && \
-    echo '<p>Este es un simulador de Nessus para propósitos educativos del laboratorio.</p>' >> /opt/nessus/www/index.html && \
-    echo '<p>En un entorno real, aquí verías la interfaz web completa de Nessus.</p>' >> /opt/nessus/www/index.html && \
-    echo '<hr>' >> /opt/nessus/www/index.html && \
-    echo '<h3>Credenciales de Acceso:</h3>' >> /opt/nessus/www/index.html && \
-    echo '<ul>' >> /opt/nessus/www/index.html && \
-    echo '<li><strong>Usuario:</strong> admin</li>' >> /opt/nessus/www/index.html && \
-    echo '<li><strong>Contraseña:</strong> admin123</li>' >> /opt/nessus/www/index.html && \
-    echo '<li><strong>Puerto:</strong> 8834</li>' >> /opt/nessus/www/index.html && \
-    echo '</ul>' >> /opt/nessus/www/index.html && \
-    echo '<hr>' >> /opt/nessus/www/index.html && \
-    echo '<h3>Funcionalidades del Simulador:</h3>' >> /opt/nessus/www/index.html && \
-    echo '<ul>' >> /opt/nessus/www/index.html && \
-    echo '<li>Interfaz web simulada</li>' >> /opt/nessus/www/index.html && \
-    echo '<li>Integración con scripts de Nmap</li>' >> /opt/nessus/www/index.html && \
-    echo '<li>Ejercicios de laboratorio</li>' >> /opt/nessus/www/index.html && \
-    echo '</ul>' >> /opt/nessus/www/index.html && \
-    echo '</div>' >> /opt/nessus/www/index.html && \
-    echo '</body></html>' >> /opt/nessus/www/index.html
-
-# Configurar Apache para servir la página simulada
-RUN echo 'Listen 8834' >> /etc/apache2/ports.conf && \
-    echo '<VirtualHost *:8834>' >> /etc/apache2/sites-available/nessus.conf && \
-    echo '    DocumentRoot /opt/nessus/www' >> /etc/apache2/sites-available/nessus.conf && \
-    echo '    ServerName localhost' >> /etc/apache2/sites-available/nessus.conf && \
-    echo '    <Directory /opt/nessus/www>' >> /etc/apache2/sites-available/nessus.conf && \
-    echo '        Options Indexes FollowSymLinks' >> /etc/apache2/sites-available/nessus.conf && \
-    echo '        AllowOverride None' >> /etc/apache2/sites-available/nessus.conf && \
-    echo '        Require all granted' >> /etc/apache2/sites-available/nessus.conf && \
-    echo '    </Directory>' >> /etc/apache2/sites-available/nessus.conf && \
-    echo '</VirtualHost>' >> /etc/apache2/sites-available/nessus.conf && \
-    a2ensite nessus.conf
-
-# Configurar permisos
-RUN chown -R www-data:www-data /opt/nessus/www && \
-    chmod -R 755 /opt/nessus/www
-
-# Crear script de entrada simplificado
+# Crear script de entrypoint mejorado
 RUN echo '#!/bin/bash' > /entrypoint.sh && \
     echo 'set -e' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
-    echo '# Iniciar Apache en segundo plano' >> /entrypoint.sh && \
-    echo 'service apache2 start' >> /entrypoint.sh && \
+    echo 'echo "=========================================="' >> /entrypoint.sh && \
+    echo 'echo "=== NESSUS VULNERABILITY SCANNER ==="' >> /entrypoint.sh && \
+    echo 'echo "=========================================="' >> /entrypoint.sh && \
+    echo 'echo "IP: 10.10.0.100"' >> /entrypoint.sh && \
+    echo 'echo "Web UI: https://localhost:8834"' >> /entrypoint.sh && \
+    echo 'echo "=========================================="' >> /entrypoint.sh && \
+    echo 'echo ""' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
-    echo 'echo "=========================================="' >> /entrypoint.sh && \
-    echo 'echo "Nessus Simulator iniciado correctamente"' >> /entrypoint.sh && \
-    echo 'echo "=========================================="' >> /entrypoint.sh && \
-    echo 'echo "Accede a: http://localhost:8834"' >> /entrypoint.sh && \
-    echo 'echo "Usuario: admin"' >> /entrypoint.sh && \
-    echo 'echo "Contraseña: admin123"' >> /entrypoint.sh && \
-    echo 'echo "=========================================="' >> /entrypoint.sh && \
+    echo 'if [ -f /opt/nessus/sbin/nessusd ]; then' >> /entrypoint.sh && \
+    echo '    echo "✅ Nessus instalado correctamente"' >> /entrypoint.sh && \
+    echo '    VERSION=$(/opt/nessus/sbin/nessusd -v 2>/dev/null || echo "N/A")' >> /entrypoint.sh && \
+    echo '    echo "📦 Versión: $VERSION"' >> /entrypoint.sh && \
+    echo '    echo ""' >> /entrypoint.sh && \
+    echo '    ' >> /entrypoint.sh && \
+    echo '    if pgrep -f nessusd > /dev/null 2>&1; then' >> /entrypoint.sh && \
+    echo '        echo "ℹ️  Nessus ya está ejecutándose"' >> /entrypoint.sh && \
+    echo '    else' >> /entrypoint.sh && \
+    echo '        echo "🚀 Iniciando Nessus..."' >> /entrypoint.sh && \
+    echo '        /opt/nessus/sbin/nessusd' >> /entrypoint.sh && \
+    echo '        sleep 10' >> /entrypoint.sh && \
+    echo '        ' >> /entrypoint.sh && \
+    echo '        if pgrep -f nessusd > /dev/null 2>&1; then' >> /entrypoint.sh && \
+    echo '            echo "✅ Nessus iniciado correctamente"' >> /entrypoint.sh && \
+    echo '        else' >> /entrypoint.sh && \
+    echo '            echo "⚠️  Error al iniciar Nessus"' >> /entrypoint.sh && \
+    echo '        fi' >> /entrypoint.sh && \
+    echo '    fi' >> /entrypoint.sh && \
+    echo '    ' >> /entrypoint.sh && \
+    echo '    echo ""' >> /entrypoint.sh && \
+    echo '    echo "=========================================="' >> /entrypoint.sh && \
+    echo '    echo "📋 CONFIGURACIÓN INICIAL:"' >> /entrypoint.sh && \
+    echo '    echo "=========================================="' >> /entrypoint.sh && \
+    echo '    echo ""' >> /entrypoint.sh && \
+    echo '    echo "1. Abre: https://localhost:8834"' >> /entrypoint.sh && \
+    echo '    echo "   (Acepta el certificado SSL)"' >> /entrypoint.sh && \
+    echo '    echo ""' >> /entrypoint.sh && \
+    echo '    echo "2. Selecciona: Nessus Essentials (GRATIS)"' >> /entrypoint.sh && \
+    echo '    echo ""' >> /entrypoint.sh && \
+    echo '    echo "3. Crea usuario administrador:"' >> /entrypoint.sh && \
+    echo '    echo "   Usuario: admin"' >> /entrypoint.sh && \
+    echo '    echo "   Contraseña: admin123"' >> /entrypoint.sh && \
+    echo '    echo ""' >> /entrypoint.sh && \
+    echo '    echo "4. Obtén código de activación GRATIS en:"' >> /entrypoint.sh && \
+    echo '    echo "   https://www.tenable.com/products/nessus/nessus-essentials"' >> /entrypoint.sh && \
+    echo '    echo "   (Recibirás por email: XXXX-XXXX-XXXX-XXXX-XXXX)"' >> /entrypoint.sh && \
+    echo '    echo ""' >> /entrypoint.sh && \
+    echo '    echo "5. Ingresa el código y espera descarga de plugins"' >> /entrypoint.sh && \
+    echo '    echo "   (Puede tomar 10-30 minutos la primera vez)"' >> /entrypoint.sh && \
+    echo '    echo ""' >> /entrypoint.sh && \
+    echo '    echo "=========================================="' >> /entrypoint.sh && \
+    echo '    echo "🎯 OBJETIVOS DEL LABORATORIO:"' >> /entrypoint.sh && \
+    echo '    echo "=========================================="' >> /entrypoint.sh && \
+    echo '    echo "10.10.0.20 - Metasploitable (SSH: msfadmin/msfadmin)"' >> /entrypoint.sh && \
+    echo '    echo "10.10.0.21 - DVWA (Web: admin/password)"' >> /entrypoint.sh && \
+    echo '    echo "10.10.0.30 - Windows Target"' >> /entrypoint.sh && \
+    echo '    echo ""' >> /entrypoint.sh && \
+    echo '    ' >> /entrypoint.sh && \
+    echo '    echo "🔍 Verificando conectividad..."' >> /entrypoint.sh && \
+    echo '    for ip in 10.10.0.20 10.10.0.21 10.10.0.30; do' >> /entrypoint.sh && \
+    echo '        if ping -c 1 -W 1 $ip > /dev/null 2>&1; then' >> /entrypoint.sh && \
+    echo '            echo "   ✅ $ip - Accesible"' >> /entrypoint.sh && \
+    echo '        else' >> /entrypoint.sh && \
+    echo '            echo "   ❌ $ip - No accesible"' >> /entrypoint.sh && \
+    echo '        fi' >> /entrypoint.sh && \
+    echo '    done' >> /entrypoint.sh && \
+    echo 'else' >> /entrypoint.sh && \
+    echo '    echo "❌ Nessus NO está instalado"' >> /entrypoint.sh && \
+    echo '    echo ""' >> /entrypoint.sh && \
+    echo '    echo "La descarga automática no funcionó."' >> /entrypoint.sh && \
+    echo '    echo "Instalación manual requerida:"' >> /entrypoint.sh && \
+    echo '    echo ""' >> /entrypoint.sh && \
+    echo '    echo "1. Descarga desde:"' >> /entrypoint.sh && \
+    echo '    echo "   https://www.tenable.com/downloads/nessus"' >> /entrypoint.sh && \
+    echo '    echo "   Archivo: Nessus-10.x.x-ubuntu1404_amd64.deb"' >> /entrypoint.sh && \
+    echo '    echo ""' >> /entrypoint.sh && \
+    echo '    echo "2. Ejecuta:"' >> /entrypoint.sh && \
+    echo '    echo "   .\\scripts\\install_nessus_real.ps1 manual Nessus-*.deb"' >> /entrypoint.sh && \
+    echo '    echo ""' >> /entrypoint.sh && \
+    echo 'fi' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
-    echo '# Mantener contenedor vivo' >> /entrypoint.sh && \
+    echo 'echo ""' >> /entrypoint.sh && \
+    echo 'echo "=========================================="' >> /entrypoint.sh && \
+    echo 'echo "✓ Contenedor listo"' >> /entrypoint.sh && \
+    echo 'echo "=========================================="' >> /entrypoint.sh && \
+    echo 'echo ""' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
     echo 'tail -f /dev/null' >> /entrypoint.sh && \
     chmod +x /entrypoint.sh
 
-# Exponer puerto
 EXPOSE 8834
+VOLUME ["/opt/nessus/var", "/opt/nessus/lib/nessus/plugins"]
 
-# Volúmenes
-VOLUME ["/opt/nessus/var", "/opt/nessus/plugins", "/opt/nessus/imports"]
+HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
+  CMD pgrep -f nessusd || exit 1
 
-# Punto de entrada (mantener como root para Apache)
 ENTRYPOINT ["/entrypoint.sh"]

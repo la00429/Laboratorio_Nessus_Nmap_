@@ -1,0 +1,65 @@
+FROM ubuntu:22.04
+
+# Metadatos
+LABEL maintainer="Laboratorio Nmap+Nessus"
+LABEL description="Nessus Vulnerability Scanner Real"
+
+# Variables de entorno
+ENV DEBIAN_FRONTEND=noninteractive
+ENV NESSUS_ADMIN_PASSWORD=admin123
+ENV NESSUS_HOME=/opt/nessus
+
+# Actualizar sistema e instalar dependencias
+RUN apt-get update && apt-get install -y \
+    wget \
+    curl \
+    gnupg2 \
+    software-properties-common \
+    apt-transport-https \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Crear usuario nessus
+RUN useradd -r -s /bin/false nessus
+
+# Crear directorios de Nessus
+RUN mkdir -p /opt/nessus/sbin && \
+    mkdir -p /opt/nessus/www && \
+    mkdir -p /opt/nessus/var && \
+    mkdir -p /opt/nessus/plugins && \
+    mkdir -p /opt/nessus/imports && \
+    chown -R nessus:nessus /opt/nessus
+
+# Descargar e instalar Nessus (versión de prueba)
+RUN cd /tmp && \
+    wget -q https://www.tenable.com/downloads/api/v1/public/pages/nessus/downloads/12379/Nessus-10.7.0-ubuntu1404_amd64.deb && \
+    dpkg -i Nessus-10.7.0-ubuntu1404_amd64.deb || apt-get install -f -y && \
+    rm -f Nessus-10.7.0-ubuntu1404_amd64.deb
+
+# Configurar permisos
+RUN chown -R nessus:nessus /opt/nessus && \
+    chmod -R 755 /opt/nessus
+
+# Crear script de inicialización
+RUN echo '#!/bin/bash' > /init-nessus.sh && \
+    echo 'set -e' >> /init-nessus.sh && \
+    echo '' >> /init-nessus.sh && \
+    echo 'echo "=== Iniciando Nessus Real ==="' >> /init-nessus.sh && \
+    echo 'echo "IP: 10.10.0.100"' >> /init-nessus.sh && \
+    echo 'echo "Puerto: 8834"' >> /init-nessus.sh && \
+    echo 'echo "Usuario: admin"' >> /init-nessus.sh && \
+    echo 'echo "Contraseña: admin123"' >> /init-nessus.sh && \
+    echo 'echo "=========================================="' >> /init-nessus.sh && \
+    echo '' >> /init-nessus.sh && \
+    echo '# Iniciar Nessus' >> /init-nessus.sh && \
+    echo '/opt/nessus/sbin/nessusd -D' >> /init-nessus.sh && \
+    chmod +x /init-nessus.sh
+
+# Exponer puerto
+EXPOSE 8834
+
+# Volúmenes
+VOLUME ["/opt/nessus/var", "/opt/nessus/plugins", "/opt/nessus/imports"]
+
+# Punto de entrada
+ENTRYPOINT ["/init-nessus.sh"]

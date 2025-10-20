@@ -40,21 +40,32 @@ Laboratorio de escaneo de vulnerabilidades y análisis de seguridad. Guía compl
 | **Metasploitable** | 10.10.0.20 | Sistema Linux vulnerable | SSH:2220, Web:8050, SMB:8082 |
 | **DVWA** | 10.10.0.21 | Aplicación web vulnerable | HTTP:8180, MySQL:8330 |
 | **Windows Target** | 10.10.0.30 | Simulador Windows | RDP:8149, SMB:8445 |
-| **Nessus** | 10.10.0.100 | Escáner de vulnerabilidades | Web UI:8834 |
+| **Nessus** | 10.10.0.100 | Escáner de vulnerabilidades | HTTPS:8834 ([Ver guía](docs/INSTALACION_NESSUS_DOCKER.md)) |
 | **Elasticsearch** | 10.10.0.40 | Motor de búsqueda | API:9200 |
 | **Kibana** | 10.10.0.41 | Visualización de datos | Web UI:5601 |
 
 ---
 
-## Opción Docker (Recomendada)
+---
 
-### Opción 1: Docker (Recomendada)
-- **Ventajas**: Setup rápido, fácil mantenimiento, portabilidad
-- **Tiempo de instalación**: 5-10 minutos
-- **Recursos**: 4GB RAM, 10GB disco
-- **Ideal para**: Estudiantes, demostraciones, entornos limitados
+## Opción A: Docker (Recomendada)
+
+### Por qué Docker
+- **Setup rápido**: 5-10 minutos
+- **Fácil mantenimiento**: Un comando para todo
+- **Portabilidad**: Funciona en Windows, Mac, Linux
+- **Menor consumo**: 4GB RAM, 10GB disco
+- **Ideal para**: Estudiantes, demostraciones, laboratorios rápidos
 
 ### Prerrequisitos
+
+**IMPORTANTE - Descarga esto ANTES de empezar:**
+- **Nessus (.deb)**: https://www.tenable.com/downloads/nessus
+  - Selecciona: **Debian 10 (64-bit)** o **Ubuntu (64-bit)**
+  - Archivo: `Nessus-10.x.x-debian10_amd64.deb`
+  - Guárdalo en tu carpeta de **Downloads**
+
+**Software necesario:**
 - Docker Desktop o Docker Engine
 - Docker Compose v3.8+
 - 4GB+ RAM, 10GB+ espacio en disco
@@ -97,6 +108,32 @@ docker compose exec kali nmap -sn 10.10.0.0/24
 # Deberías ver todos los hosts del laboratorio
 ```
 
+#### Paso 6: Instalar Nessus (Requerido para Módulo 4)
+
+**IMPORTANTE**: Asegúrate de haber descargado el archivo `.deb` en el paso de Prerrequisitos.
+
+**Instalación automática (1 comando):**
+```powershell
+# Ejecuta el script de instalación automática
+.\scripts\setup_nessus.ps1
+```
+
+El script automáticamente:
+- Busca el archivo `.deb` en Downloads
+- Copia el archivo al contenedor
+- Instala Nessus
+- Inicia el servicio
+- Abre el navegador
+
+**Después de ejecutar el script:**
+1. **Accede a**: https://localhost:8834
+2. **Código gratis**: https://www.tenable.com/products/nessus/nessus-essentials
+3. **Usuario**: admin / **Password**: admin123
+4. **Espera** plugins (10-30 min)
+5. **Targets**: `10.10.0.20,10.10.0.21,10.10.0.30`
+
+**[Guía completa](docs/INSTALACION_NESSUS_DOCKER.md)** | **[Guía rápida](NESSUS_QUICKSTART.md)**
+
 ### Comandos de Gestión Docker
 
 ```bash
@@ -122,25 +159,26 @@ docker compose up -d
 |----------|-----|--------------|
 | **Kali SSH** | `ssh root@localhost -p 2222` | root/kali123 |
 | **DVWA** | http://localhost:8180 | admin/password |
-| **Nessus** | http://localhost:8834 | admin/admin123 |
+| **Nessus** | https://localhost:8834 | admin/admin123 ([Requiere instalación manual](docs/INSTALACION_NESSUS_DOCKER.md)) |
 | **Kibana** | http://localhost:5601 | - |
 | **Elasticsearch** | http://localhost:9200 | - |
 
 ---
 
-## Opción Máquinas Virtuales
+## Opción B: Máquinas Virtuales (Tradicional)
 
-### Ventajas
-- Realismo total
-- Flexibilidad máxima
-- Técnicas avanzadas de red
-- Experiencia más realista
+### Cuándo usar VMs
+- **Realismo total**: Comportamiento de sistemas reales
+- **Flexibilidad máxima**: Control completo de configuración
+- **Técnicas avanzadas**: Pivoting, post-explotación compleja
+- **Experiencia realista**: Simulación de entornos corporativos
+- **Ideal para**: Profesionales, certificaciones, estudios avanzados
 
 ### Prerrequisitos
-- VirtualBox, VMware o Proxmox
-- 8GB+ RAM, 50GB+ espacio en disco
-- Snapshot capabilities
-- Red host-only o NAT interna
+- **Hipervisor**: VirtualBox, VMware Workstation, o Proxmox
+- **Hardware**: 8GB+ RAM, 50GB+ disco
+- **Funcionalidades**: Snapshot capabilities
+- **Red**: Host-only o NAT interna configurada
 
 ### Configuración de VMs
 
@@ -191,7 +229,13 @@ VBoxManage hostonlyif ipconfig vboxnet0 --ip 10.10.0.1 --netmask 255.255.255.0
 
 ---
 
-## Módulos del Laboratorio
+---
+
+# Módulos del Laboratorio
+
+> **Nota**: Los siguientes módulos funcionan tanto en Docker como en VMs. Los comandos son los mismos en ambas opciones.
+
+---
 
 ### Módulo 1: Fundamentos y Reconocimiento (Nmap Básico)
 

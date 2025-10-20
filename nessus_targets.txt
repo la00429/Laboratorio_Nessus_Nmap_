@@ -1,0 +1,17 @@
+# Objetivos del Laboratorio para Nessus
+# Copia estos objetivos en la configuración de Nessus
+
+# Objetivos principales
+10.10.0.20  # Metasploitable (Linux vulnerable)
+10.10.0.21  # DVWA (Web vulnerable)
+10.10.0.30  # Windows Target
+
+# Rango completo (opcional)
+10.10.0.0/24
+
+# Puertos específicos a escanear
+22,80,443,445,21,23,25,53,110,139,993,995,1723,3306,5432,5900,6001
+
+# Credenciales para escaneos credentialed
+# SSH: msfadmin/msfadmin (Metasploitable)
+# SSH: root/password (DVWA)
