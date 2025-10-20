@@ -50,6 +50,10 @@ RUN pip3 install --break-system-packages \
     matplotlib \
     seaborn
 
+# Instalar dos2unix para convertir archivos de Windows
+RUN apt-get update && apt-get install -y dos2unix && \
+    rm -rf /var/lib/apt/lists/*
+
 # Configurar SSH
 RUN echo 'root:kali123' | chpasswd && \
     sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
@@ -69,9 +73,10 @@ RUN mkdir -p /workspace/scripts /workspace/nse
 COPY scripts/ /workspace/scripts/
 COPY nse/ /workspace/nse/
 
-# Hacer ejecutables los scripts
+# Hacer ejecutables los scripts y convertir formato de línea
 RUN find /workspace/scripts -name "*.py" -exec chmod +x {} \; 2>/dev/null || true
 RUN find /workspace/scripts -name "*.sh" -exec chmod +x {} \; 2>/dev/null || true
+RUN find /workspace/scripts -name "*.sh" -exec dos2unix {} \; 2>/dev/null || true
 
 # Crear usuario de trabajo
 RUN useradd -m -s /bin/bash -u 1000 labuser && \

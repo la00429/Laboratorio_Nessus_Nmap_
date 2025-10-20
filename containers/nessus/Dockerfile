@@ -61,13 +61,22 @@ RUN echo '<html><head><title>Nessus Simulator</title></head>' > /opt/nessus/www/
     echo '</div>' >> /opt/nessus/www/index.html && \
     echo '</body></html>' >> /opt/nessus/www/index.html
 
-# Configurar Apache para servir la página simulada
+# Configurar Apache para servir la página simulada CON PERMISOS CORRECTOS
 RUN echo 'Listen 8834' >> /etc/apache2/ports.conf && \
     echo '<VirtualHost *:8834>' >> /etc/apache2/sites-available/nessus.conf && \
     echo '    DocumentRoot /opt/nessus/www' >> /etc/apache2/sites-available/nessus.conf && \
     echo '    ServerName localhost' >> /etc/apache2/sites-available/nessus.conf && \
+    echo '    <Directory /opt/nessus/www>' >> /etc/apache2/sites-available/nessus.conf && \
+    echo '        Options Indexes FollowSymLinks' >> /etc/apache2/sites-available/nessus.conf && \
+    echo '        AllowOverride None' >> /etc/apache2/sites-available/nessus.conf && \
+    echo '        Require all granted' >> /etc/apache2/sites-available/nessus.conf && \
+    echo '    </Directory>' >> /etc/apache2/sites-available/nessus.conf && \
     echo '</VirtualHost>' >> /etc/apache2/sites-available/nessus.conf && \
     a2ensite nessus.conf
+
+# Configurar permisos correctos
+RUN chown -R www-data:www-data /opt/nessus/www && \
+    chmod -R 755 /opt/nessus/www
 
 # Crear usuario nessus después de crear los archivos
 RUN groupadd -r nessus && useradd -r -g nessus -d /opt/nessus -s /bin/bash nessus && \

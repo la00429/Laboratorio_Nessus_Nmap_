@@ -103,4 +103,6 @@ echo "- Contraseña: admin123"
 echo ""
 
 echo "Iniciando servicio Nessus..."
+echo "Iniciando Apache..."
+service apache2 start
 exec "$@"
