@@ -16,9 +16,17 @@ RUN apt-get update && apt-get install -y \
     wget \
     && rm -rf /var/lib/apt/lists/*
 
-# Crear directorios y archivos como root
+# Crear directorios necesarios para Apache CON PERMISOS
+RUN mkdir -p /var/run/apache2 /var/lock/apache2 && \
+    chown -R www-data:www-data /var/run/apache2 /var/lock/apache2 && \
+    chmod -R 755 /var/run/apache2 /var/lock/apache2
+
+# Crear directorios de Nessus
 RUN mkdir -p /opt/nessus/sbin && \
-    mkdir -p /opt/nessus/www
+    mkdir -p /opt/nessus/www && \
+    mkdir -p /opt/nessus/var && \
+    mkdir -p /opt/nessus/plugins && \
+    mkdir -p /opt/nessus/imports
 
 # Crear simulador de Nessus
 RUN echo '#!/bin/bash' > /opt/nessus/sbin/nessusd && \
@@ -61,7 +69,7 @@ RUN echo '<html><head><title>Nessus Simulator</title></head>' > /opt/nessus/www/
     echo '</div>' >> /opt/nessus/www/index.html && \
     echo '</body></html>' >> /opt/nessus/www/index.html
 
-# Configurar Apache para servir la página simulada CON PERMISOS CORRECTOS
+# Configurar Apache para servir la página simulada
 RUN echo 'Listen 8834' >> /etc/apache2/ports.conf && \
     echo '<VirtualHost *:8834>' >> /etc/apache2/sites-available/nessus.conf && \
     echo '    DocumentRoot /opt/nessus/www' >> /etc/apache2/sites-available/nessus.conf && \
@@ -74,32 +82,34 @@ RUN echo 'Listen 8834' >> /etc/apache2/ports.conf && \
     echo '</VirtualHost>' >> /etc/apache2/sites-available/nessus.conf && \
     a2ensite nessus.conf
 
-# Configurar permisos correctos
+# Configurar permisos
 RUN chown -R www-data:www-data /opt/nessus/www && \
     chmod -R 755 /opt/nessus/www
 
-# Crear usuario nessus después de crear los archivos
-RUN groupadd -r nessus && useradd -r -g nessus -d /opt/nessus -s /bin/bash nessus && \
-    chown -R nessus:nessus /opt/nessus
+# Crear script de entrada simplificado
+RUN echo '#!/bin/bash' > /entrypoint.sh && \
+    echo 'set -e' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo '# Iniciar Apache en segundo plano' >> /entrypoint.sh && \
+    echo 'service apache2 start' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo 'echo "=========================================="' >> /entrypoint.sh && \
+    echo 'echo "Nessus Simulator iniciado correctamente"' >> /entrypoint.sh && \
+    echo 'echo "=========================================="' >> /entrypoint.sh && \
+    echo 'echo "Accede a: http://localhost:8834"' >> /entrypoint.sh && \
+    echo 'echo "Usuario: admin"' >> /entrypoint.sh && \
+    echo 'echo "Contraseña: admin123"' >> /entrypoint.sh && \
+    echo 'echo "=========================================="' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo '# Mantener contenedor vivo' >> /entrypoint.sh && \
+    echo 'tail -f /dev/null' >> /entrypoint.sh && \
+    chmod +x /entrypoint.sh
 
-# Crear script de inicialización
-COPY containers/nessus/init-nessus.sh /init-nessus.sh
-RUN chmod +x /init-nessus.sh
-
-# Crear script de entrada
-COPY containers/nessus/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh && \
-    sed -i 's/\r$//' /entrypoint.sh
-
-# Exponer puertos
+# Exponer puerto
 EXPOSE 8834
 
 # Volúmenes
 VOLUME ["/opt/nessus/var", "/opt/nessus/plugins", "/opt/nessus/imports"]
 
-# Usuario
-USER nessus
-
-# Punto de entrada
+# Punto de entrada (mantener como root para Apache)
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["/opt/nessus/sbin/nessusd", "-D"]
